@@ -35,6 +35,12 @@ class PiecePicker:
         self.seeds_connected = 0
         self._init_interests()
 
+    """
+    Initializes the self.interests list. this is a list of list in the size of priority_step
+    each inner list is in the size of self.numpieces
+    The higher the a piece in the interests index, the better it's priority
+    each piece could be in at most one priority (e.g if piece 274 is in priority 12 it can't be in any other priority)
+    """
     def _init_interests(self):
         self.interests = [[] for x in xrange(self.priority_step)]
         self.level_in_interests = [self.priority_step] * self.numpieces
@@ -45,7 +51,9 @@ class PiecePicker:
             self.pos_in_interests[interests[i]] = i
         self.interests.append(interests)
 
-
+    """
+    Update that there is a peer that have this particular piece.
+    """
     def got_have(self, piece):
         self.totalcount+=1
         numint = self.numhaves[piece]
@@ -72,10 +80,15 @@ class PiecePicker:
             self.interests.append([])
         self._shift_over(piece, self.interests[numint], self.interests[numint + 1])
 
+    """
+    Update that we no longer have a peer with that piece.
+    """
     def lost_have(self, piece):
         self.totalcount-=1
+        #The number of peers that holds this piece
         numint = self.numhaves[piece]
         self.numhaves[piece] -= 1
+        #???
         self.crosscount[numint] -= 1
         self.crosscount[numint-1] += 1
         if not self.done:
@@ -90,7 +103,11 @@ class PiecePicker:
         elif self.has[piece] or self.priority[piece] == -1:
             return
         self._shift_over(piece, self.interests[numint], self.interests[numint - 1])
-
+    
+    """
+    Shifts piece from l1 to l2.
+    l1 and l2 are two pieces lists, each represents different priority step in self.interests  
+    """
     def _shift_over(self, piece, l1, l2):
         assert self.superseed or (not self.has[piece] and self.priority[piece] >= 0)
         parray = self.pos_in_interests
@@ -173,16 +190,24 @@ class PiecePicker:
             self.crosscount2[numhaves+1] += 1
         self._remove_from_interests(piece)
 
-
+    """
+    return the index of the next piece to ask for
+    haves - list of pieces we know peers have
+    wantfunc - a function that return if we want that particular piece
+    complete_first - should we complete pieces that we already started to take care of?
+    """
     def next(self, haves, wantfunc, complete_first = False):
         cutoff = self.numgot < self.rarest_first_cutoff
         complete_first = (complete_first or cutoff) and not haves.complete()
         best = None
         bestnum = 2 ** 30
+        #self.started represents all of the pieces that have been called already
         for i in self.started:
             if haves[i] and wantfunc(i):
                 if self.level_in_interests[i] < bestnum:
+                    #the best one to get next
                     best = i
+                    #the priority of this "best" piece
                     bestnum = self.level_in_interests[i]
         if best is not None:
             if complete_first or (cutoff and len(self.interests) > self.cutoff):
