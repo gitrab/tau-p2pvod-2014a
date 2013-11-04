@@ -675,6 +675,9 @@ class BT1Download:
                                            self.downloader,
                                            self.storagewrapper,
                                            self.config,self.downmeasure)
+        
+        self.picker.streamWatcher = self.streamwatcher
+        
                                            
         self.rawserver.add_task(self.streamwatcher.verify_vod_rate,int(self.config['delay']))
         #######################

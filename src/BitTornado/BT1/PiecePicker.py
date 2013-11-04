@@ -1,8 +1,10 @@
 # Written by Bram Cohen
 # see LICENSE.txt for license information
 
+import time
 from random import randrange, shuffle
 from BitTornado.clock import clock
+from BitTornado.StreamWatcher import StreamWatcher 
 try:
     True
 except:
@@ -34,6 +36,7 @@ class PiecePicker:
         self.superseed = False
         self.seeds_connected = 0
         self._init_interests()
+        self.streamWatcher = None
 
     """
     Initializes the self.interests list. this is a list of list in the size of priority_step
@@ -45,7 +48,7 @@ class PiecePicker:
         self.interests = [[] for x in xrange(self.priority_step)]
         self.level_in_interests = [self.priority_step] * self.numpieces
         interests = range(self.numpieces)
-        #shuffle(interests)
+        shuffle(interests)
         self.pos_in_interests = [0] * self.numpieces
         for i in xrange(self.numpieces):
             self.pos_in_interests[interests[i]] = i
@@ -197,6 +200,9 @@ class PiecePicker:
     complete_first - should we complete pieces that we already started to take care of?
     """
     def next(self, haves, wantfunc, complete_first = False):
+        return self.inOrder(haves, wantfunc)
+    
+    def rarestFirst(self, haves, wantfunc, complete_first = False):
         cutoff = self.numgot < self.rarest_first_cutoff
         complete_first = (complete_first or cutoff) and not haves.complete()
         best = None
@@ -228,7 +234,14 @@ class PiecePicker:
             return best
         return None
 
-
+    def inOrder(self, haves, wantfunc):      
+        t = int(time.time() - self.streamWatcher.startTime)
+        Orig  =  int(((t - self.streamWatcher.delay) * self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
+        Dest  =  int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
+        for i in range [Orig, Dest]:
+            if haves[i] and wanfunc(i):
+                return i
+        
     def am_I_complete(self):
         return self.done
     
