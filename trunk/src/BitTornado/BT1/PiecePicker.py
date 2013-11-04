@@ -200,7 +200,13 @@ class PiecePicker:
     complete_first - should we complete pieces that we already started to take care of?
     """
     def next(self, haves, wantfunc, complete_first = False):
-        return self.inOrder(haves, wantfunc)
+        piece = self.inOrder(haves, wantfunc)
+        
+        if(piece == None):
+            piece = self.rarestFirst(haves, wantfunc, complete_first)
+            
+        return piece
+        
     
     def rarestFirst(self, haves, wantfunc, complete_first = False):
         cutoff = self.numgot < self.rarest_first_cutoff
