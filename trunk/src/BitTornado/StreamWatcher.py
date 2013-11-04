@@ -20,7 +20,7 @@ class StreamWatcher:
         self.downloader = _downloader                    #downloader Instance
         self.storagewrapper = _storagewrapper            #StorageWrapper Instance
         self.config = _config                            #Config Dictionary (Olds Argv)
-	self.downmeasure = _downmeasure 
+        self.downmeasure = _downmeasure 
         self.init()                                      #Initialize self Instance
 	
       
