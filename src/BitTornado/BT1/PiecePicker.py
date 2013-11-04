@@ -39,7 +39,7 @@ class PiecePicker:
         self.interests = [[] for x in xrange(self.priority_step)]
         self.level_in_interests = [self.priority_step] * self.numpieces
         interests = range(self.numpieces)
-        shuffle(interests)
+        #shuffle(interests)
         self.pos_in_interests = [0] * self.numpieces
         for i in xrange(self.numpieces):
             self.pos_in_interests[interests[i]] = i
