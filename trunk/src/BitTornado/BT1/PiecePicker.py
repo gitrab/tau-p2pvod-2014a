@@ -244,7 +244,7 @@ class PiecePicker:
         t = int(time.time() - self.streamWatcher.startTime)
         Orig  =  int(((t - self.streamWatcher.delay) * self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
         Dest  =  int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
-        for i in range [Orig, Dest]:
+        for i in range(Orig, Dest):
             if haves[i] and wanfunc(i):
                 return i
         
