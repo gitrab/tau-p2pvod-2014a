@@ -200,12 +200,7 @@ class PiecePicker:
     complete_first - should we complete pieces that we already started to take care of?
     """
     def next(self, haves, wantfunc, complete_first = False):
-        piece = self.inOrder(haves, wantfunc)
-        
-        if(piece == None):
-            piece = self.rarestFirst(haves, wantfunc, complete_first)
-            
-        return piece
+        return self.inOrder(haves, wantfunc)
         
     
     def rarestFirst(self, haves, wantfunc, complete_first = False):
@@ -242,10 +237,12 @@ class PiecePicker:
 
     def inOrder(self, haves, wantfunc):      
         t = int(time.time() - self.streamWatcher.startTime)
-        Orig  =  int(((t - self.streamWatcher.delay) * self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
-        Dest  =  int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
-        for i in range(Orig, Dest):
-            if haves[i] and wanfunc(i):
+        if t > self.streamWatcher.delay:
+            intervalStart  =  int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
+        else:
+            intervalStart = 0
+        for i in range(intervalStart, self.numpieces):
+            if haves[i] and wantfunc(i):
                 return i
         
     def am_I_complete(self):

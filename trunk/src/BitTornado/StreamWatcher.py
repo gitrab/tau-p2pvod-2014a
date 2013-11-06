@@ -127,7 +127,7 @@ class StreamWatcher:
         
     def display(self) : 
         t = int(time.time() - self.startTime)
-	cur_piece = int(((t - self.delay) * self.rate) / self.toKbytes(self.piece_size))
+        cur_piece = int(((t - self.delay) * self.rate) / self.toKbytes(self.piece_size))
         if self.config['verbose']:	
 	    print '--------------------------------StreamWatcher-------------------------------------\r'
 	    print 'Csv stats:        ',  self.csvFile,'\r'
