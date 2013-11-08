@@ -1,6 +1,7 @@
 import sys
 import csv
 import os
+import math
 
 ALGORITHM_INDEX = 0
 DFS_INDEX = 1
@@ -12,53 +13,70 @@ class ComputeStatistics:
     
     def __init__(self, dirPath):
        self.dirPath = dirPath
-       self.csvReaders = []
+       self.dataFilesAsLists = []
        self.algorithmType = None 
        
     
-    def loadCSVFiles(self):
-        csvFilesPaths = os.listdir(self.dirPath)
-        for i in range(len(csvFilesPaths)):
-            currCSVFile = open(os.path.join(self.dirPath, csvFilesPaths[i]))
-            self.csvReaders.append(csv.reader(currCSVFile, delimiter=','))
-            #advance each reader to it's first data row, in order to pass the headline
-            self.csvReaders[-1].next()
+    def loadCSVFilesToLists(self):
+        csvFoldersPaths = os.listdir(self.dirPath)
+        for i in range(len(csvFoldersPaths)):
+            currFolderPath = os.path.join(self.dirPath, csvFoldersPaths[i])
+            currFilesPaths = os.listdir(currFolderPath)
+            for j in range(len(currFilesPaths)):
+                self.dataFilesAsLists.append([])
+                with open(os.path.join(currFolderPath, currFilesPaths[j])) as currCSVFile: 
+                    currReader = csv.reader(currCSVFile, delimiter=',')
+                    for row in currReader:
+                        #discard headlines
+                        if(row[0]!='alg'):
+                            self.dataFilesAsLists[(i*len(currFilesPaths))+j].append(row)
+
             
-    
-    def closeCSVFiles(self):
-        for i in range(len(self.csvReaders)):
-            self.csvReaders[i].close()
+    def computeAverages(self):
+        
+        dfsAverages = [0.0] * len(self.dataFilesAsLists[0])
+        p2pAverages = [0.0] * len(self.dataFilesAsLists[0])
+        averages = {"DFS" : dfsAverages, "P2P" : p2pAverages}
+        
+        for i in range(len(self.dataFilesAsLists[0])):
+            for j in range(len(self.dataFilesAsLists)):
+                dfsAverages[i] += float(self.dataFilesAsLists[j][i][DFS_INDEX])
+                p2pAverages[i] += float(self.dataFilesAsLists[j][i][P2P_INDEX])
             
-    def computeAverage(self):
-        dfsAverages = []
-        p2pAverages = []
-        averages = [dfsAverages, p2pAverages]
-        while(1):
-            try:
-                dfsSum = 0
-                p2pSum = 0
-                length = 0
-                for i in range(len(self.csvReaders)):
-                    currRow = self.csvReaders[i].next()
-                    dfsSum += int(currRow[DFS_INDEX])
-                    p2pSum += int(currRow[P2P_INDEX])
-                    length += 1
-                    
-                dfsAverages.append(float(dfsSum)/float(length))
-                p2pAverages.append(float(p2pSum)/float(length))
-            except:
-                break
+            p2pAverages[i] /= len(self.dataFilesAsLists)
+            dfsAverages[i] /= len(self.dataFilesAsLists)
+
             
         return averages
     
+    def computeVariances(self, averages):
+        
+        dfsVariances = [0.0] * len(self.dataFilesAsLists[0])
+        p2pVariances = [0.0] * len(self.dataFilesAsLists[0])
+        variances = {"DFS" : dfsVariances, "P2P" : p2pVariances}
+        
+        for i in range(len(self.dataFilesAsLists[0])):
+            for j in range(len(self.dataFilesAsLists)):
+                dfsVariances[i] += (float(self.dataFilesAsLists[j][i][DFS_INDEX]) - averages["DFS"][i]) ** 2
+                p2pVariances[i] += (float(self.dataFilesAsLists[j][i][P2P_INDEX]) - averages["P2P"][i]) ** 2
+            
+            dfsVariances[i] /= len(self.dataFilesAsLists)
+            p2pVariances[i] /= len(self.dataFilesAsLists)
+        
+        return variances
     
 def main():
-    stats = ComputeStatistics(sys.argv[1])
     
-    stats.loadCSVFiles()
-    averageList = stats.computeAverage()
-    print averageList
-    #stats.closeCSVFiles()
+    stats = ComputeStatistics(sys.argv[1])
+    stats.loadCSVFilesToLists()
+    averages = stats.computeAverages()
+    variances = stats.computeVariances(averages)
+    for i in range(len(variances.values())):
+        for j in range(len(variances.values()[i])):
+            variances.values()[i][j] = math.sqrt(variances.values()[i][j])
+    
+    print averages
+    print variances
     
    
 
