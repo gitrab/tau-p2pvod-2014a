@@ -79,7 +79,16 @@ class Bitfield:
 
     def complete(self):
         return not self.numfalse
-
+    
+    def __str__(self):
+        str = '['
+        for i in range(self.length):
+            if self.array[i]:
+                str += '+'
+            else:
+                str += '-'
+        str += ']'
+        return str
 
 def test_bitfield():
     try:
