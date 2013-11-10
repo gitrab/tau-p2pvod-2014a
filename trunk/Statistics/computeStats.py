@@ -65,18 +65,22 @@ class ComputeStatistics:
         
         return variances
     
+    #TODO: accumulated DFS (as in the graphs xlxs)
+    
 def main():
     
     stats = ComputeStatistics(sys.argv[1])
     stats.loadCSVFilesToLists()
     averages = stats.computeAverages()
     variances = stats.computeVariances(averages)
+    
+    #Takes the square root of the variances to get the standard daviations
     for i in range(len(variances.values())):
         for j in range(len(variances.values()[i])):
-            variances.values()[i][j] = math.sqrt(variances.values()[i][j])
+           variances.values()[i][j] = math.sqrt(variances.values()[i][j])
     
-    print averages
-    print variances
+    print averages["DFS"][-1]
+    print variances["DFS"][-1]
     
    
 
