@@ -200,6 +200,13 @@ class PiecePicker:
     complete_first - should we complete pieces that we already started to take care of?
     """
     def next(self, haves, wantfunc, complete_first = False):
+        #piece = self.inOrder(haves, wantfunc)
+        # [--+----------------------------------]
+        #print haves
+        #if piece != None:
+        #    print "[" + " " * (piece) + '+'
+        #else:
+        #    print "No piece found"
         return self.inOrder(haves, wantfunc)
         
     
