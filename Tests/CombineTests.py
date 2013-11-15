@@ -1,30 +1,43 @@
 import sys
 import csv
 import os
+import fnmatch
+
+def getCsvFiles(path):
+    csvFiles = []
+    for root, dirnames, filenames in os.walk(path):
+      for filename in fnmatch.filter(filenames, '*.csv'):
+          csvFiles.append(os.path.join(root, filename))
+    
+    return csvFiles
 
 def main():
 
-    testDir = sys.argv[1]
-    with open(sys.argv[2], 'w') as ouputFile:
-        csvWriter = csv.writer(ouputFile, delimiter=',')
+    print 'Starting...'
+
+    testsDir = sys.argv[1]
+    outputFile = open(sys.argv[2], 'w')
+    csvWriter = csv.writer(outputFile, delimiter=',')
         
-        # Add the header
-        csvWriter.writerow(['FOLDER','FILE','ALG','DFS','P2P'])
-        
-        # Add all tests files to the output
-        csvFoldersPaths = os.listdir(testDir)
-        for i in range(len(csvFoldersPaths)):
-            currFolderPath = os.path.join(testDir, csvFoldersPaths[i])
-            currFilesPaths = [file for file in os.listdir(currFolderPath) if file[-3:] == "csv"]
-            if currFilesPaths:
-                for file in currFilesPaths:
-                    with open(os.path.join(currFolderPath, file)) as currFile:
-                        currReader = csv.reader(currFile, delimiter=',')
-                        for row in currReader:
-                            if not row[0] == "alg":
-                                newRow = [os.path.basename(currFolderPath), file]
-                                newRow.extend(row)
-                                csvWriter.writerow(newRow)
+    # Add the header
+    csvWriter.writerow(['PATH','T','ALG','DFS','P2P'])
+    
+    # Run on all csv files in the tests directory and add them to output
+    csvFiles = getCsvFiles(testsDir)
+    for csvFilePath in csvFiles:
+        print "Adding: %s" % csvFilePath
+        with open(csvFilePath) as currFile:
+            currReader = csv.reader(currFile, delimiter=',')
+            rowindex = 0
+            for row in currReader:
+                if not row[0] == "alg":
+                    newRow = [csvFilePath, ++rowindex]
+                    newRow.extend(row)
+                    csvWriter.writerow(newRow)
+    
+    outputFile.close()    
+    
+    print 'Done. %d files added.' % len(csvFiles)
                             
 if __name__ == "__main__":
     main()
