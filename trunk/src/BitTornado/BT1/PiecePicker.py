@@ -200,15 +200,20 @@ class PiecePicker:
     complete_first - should we complete pieces that we already started to take care of?
     """
     def next(self, haves, wantfunc, complete_first = False):
-        #piece = self.inOrder(haves, wantfunc)
-        # [--+----------------------------------]
-        #print haves
-        #if piece != None:
-        #    print "[" + " " * (piece) + '+'
-        #else:
-        #    print "No piece found"
+        #### P2PVODEX start ####
         return self.inOrder(haves, wantfunc)
         
+    
+    def inOrder(self, haves, wantfunc):      
+        t = int(time.time() - self.streamWatcher.startTime)
+        if t > self.streamWatcher.delay:
+            intervalStart  =  int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
+        else:
+            intervalStart = 0
+        for i in range(intervalStart, self.numpieces):
+            if haves[i] and wantfunc(i):
+                return i
+        #### P2PVODEX end  ####
     
     def rarestFirst(self, haves, wantfunc, complete_first = False):
         cutoff = self.numgot < self.rarest_first_cutoff
@@ -242,15 +247,7 @@ class PiecePicker:
             return best
         return None
 
-    def inOrder(self, haves, wantfunc):      
-        t = int(time.time() - self.streamWatcher.startTime)
-        if t > self.streamWatcher.delay:
-            intervalStart  =  int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
-        else:
-            intervalStart = 0
-        for i in range(intervalStart, self.numpieces):
-            if haves[i] and wantfunc(i):
-                return i
+    
         
     def am_I_complete(self):
         return self.done
