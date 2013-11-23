@@ -199,8 +199,9 @@ class PiecePicker:
     wantfunc - a function that return if we want that particular piece
     complete_first - should we complete pieces that we already started to take care of?
     """
+    #### P2PVODEX start ####
     def next(self, haves, wantfunc, complete_first = False):
-        #### P2PVODEX start ####
+        
         return self.inOrder(haves, wantfunc)
         
     
@@ -213,7 +214,7 @@ class PiecePicker:
         for i in range(intervalStart, self.numpieces):
             if haves[i] and wantfunc(i):
                 return i
-        #### P2PVODEX end  ####
+        
     
     def rarestFirst(self, haves, wantfunc, complete_first = False):
         cutoff = self.numgot < self.rarest_first_cutoff
@@ -247,7 +248,7 @@ class PiecePicker:
             return best
         return None
 
-    
+    #### P2PVODEX end  ####
         
     def am_I_complete(self):
         return self.done
