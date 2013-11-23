@@ -31,7 +31,8 @@ def main():
             rowindex = 0
             for row in currReader:
                 if not row[0] == "alg":
-                    newRow = [csvFilePath, ++rowindex]
+                    rowindex += 1
+                    newRow = [csvFilePath, rowindex]
                     newRow.extend(row)
                     csvWriter.writerow(newRow)
     
