@@ -65,6 +65,8 @@ class ComputeStatistics:
         
         return variances
     
+    
+    
     #TODO: accumulated DFS (as in the graphs xlxs)
     
 def main():
@@ -79,8 +81,8 @@ def main():
         for j in range(len(variances.values()[i])):
            variances.values()[i][j] = math.sqrt(variances.values()[i][j])
     
-    print averages["DFS"][-1]
-    print variances["DFS"][-1]
+    print averages["DFS"][5] , ",", averages["DFS"][-1]
+    print variances["DFS"][15] , "," , variances["DFS"][-1]
     
    
 
