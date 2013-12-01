@@ -22,7 +22,7 @@ class StreamWatcher:
         self.config = _config                            #Config Dictionary (Olds Argv)
         self.downmeasure = _downmeasure 
         self.init()                                      #Initialize self Instance
-	
+
       
     def init (self):
         self.rate  = int(self.config['rate']) 
@@ -48,7 +48,7 @@ class StreamWatcher:
                 os.remove(self.csvFile)  
         except ValueError:
             return
-		
+
     def verify_vod_rate(self):
         ((self.prefetchT / 100)*self.total)/self.rate
         t = int(time.time() - self.startTime)
@@ -70,35 +70,35 @@ class StreamWatcher:
                         self.numOfFullPiecesFromServer +=1
                 #Case 2 : piece is in the middle of a download from some peer\seed: 
                 else:    
-                        if ((not self.storagewrapper.do_I_have(i)) and self.storagewrapper.dirty.has_key(i)):
-                                holes = self.get_dirty_holes (self.storagewrapper.dirty[i])
-                                if (holes):
-                                    self.cancel_piece_download(i)
-                                    j = iter(holes)
-                                    counter = len(holes)
-                                    while(counter>1):
-                                        chunk  = j.next()
-                                        self.total_dfs += chunk[1]
-                                        counter-=1
-                                    chunk  = j.next()
-                                    self.total_dfs += chunk[1]
-                                    self.numOfDirtyPiecesFromServer +=1                 
-	dfs  = (self.total_dfs*100)/self.total
-
-	self.stats2csv(dfs, self.p2p)
+                    if ((not self.storagewrapper.do_I_have(i)) and self.storagewrapper.dirty.has_key(i)):
+                        holes = self.get_dirty_holes (self.storagewrapper.dirty[i])
+                        if (holes):
+                            self.cancel_piece_download(i)
+                            j = iter(holes)
+                            counter = len(holes)
+                            while(counter>1):
+                                chunk  = j.next()
+                                self.total_dfs += chunk[1]
+                                counter-=1
+                            chunk  = j.next()
+                            self.total_dfs += chunk[1]
+                            self.numOfDirtyPiecesFromServer +=1   
+                            
+        dfs  = (self.total_dfs*100)/self.total
+        self.stats2csv(dfs, self.p2p)
         print'ZZZ Dest = ',Dest,'Orig = ',Orig,'self.numOfPieces=',self.numOfPieces
-	if(Dest == (self.numOfPieces-1)):
-                order = int(self.config['group_size']) - int(self.config['order'])
-                while(order>0):
-                        gap = self.gap
-                        while(gap>0):
-                                self.stats2csv(dfs, self.p2p)
-                                gap = gap-1
-                        order = order-1
-	        if self.config['verbose']:
-		        os.system("./run_all.sh stop")
+        if(Dest == (self.numOfPieces-1)):
+            order = int(self.config['group_size']) - int(self.config['order'])
+            while(order>0):
+                    gap = self.gap
+                    while(gap>0):
+                            self.stats2csv(dfs, self.p2p)
+                            gap = gap-1
+                    order = order-1
+            if self.config['verbose']:
+                os.system("./run_all.sh stop")
         else:
-	        self.sched(self.verify_vod_rate, self.prefetch)
+            self.sched(self.verify_vod_rate, self.prefetch)
 
     def get_dirty_holes(self,dirty):
         if (not dirty):
@@ -129,19 +129,19 @@ class StreamWatcher:
         t = int(time.time() - self.startTime)
         cur_piece = int(((t - self.delay) * self.rate) / self.toKbytes(self.piece_size))
         if self.config['verbose']:	
-	    print '--------------------------------StreamWatcher-------------------------------------\r'
-	    print 'Csv stats:        ',  self.csvFile,'\r'
-	    print 'DFS is:           ',  self.total_dfs                 ,'bytes\r'
-	    print 'DFS/Total is:     ',  (self.total_dfs*100)/self.total ,'%\r'
-	    print 'FullPieces:       ',  self.numOfFullPiecesFromServer ,'/',self.numOfPieces ,'\r'
-	    print 'DirtyPieces:      ',  self.numOfDirtyPiecesFromServer ,'/',self.numOfPieces,'\r'
-	    print 'FaildHashChecks:  ',  self.numOFFaildHashChecksFromServer,'\r'
-	    print 'Prefetching       ',  self.config['prefetchT'],'%\r'
-	    if cur_piece < 0:
-		cur_piece = 0
-	    print 'Playing point:    ',  cur_piece,'/',self.numOfPieces,'(',int(((cur_piece*100)/self.numOfPieces)),'%)\r'
-	    stdout.flush()
-	    
+            print '--------------------------------StreamWatcher-------------------------------------\r'
+            print 'Csv stats:        ',  self.csvFile,'\r'
+            print 'DFS is:           ',  self.total_dfs                 ,'bytes\r'
+            print 'DFS/Total is:     ',  (self.total_dfs*100)/self.total ,'%\r'
+            print 'FullPieces:       ',  self.numOfFullPiecesFromServer ,'/',self.numOfPieces ,'\r'
+            print 'DirtyPieces:      ',  self.numOfDirtyPiecesFromServer ,'/',self.numOfPieces,'\r'
+            print 'FaildHashChecks:  ',  self.numOFFaildHashChecksFromServer,'\r'
+            print 'Prefetching       ',  self.config['prefetchT'],'%\r'
+            if cur_piece < 0:
+                cur_piece = 0
+                print 'Playing point:    ',  cur_piece,'/',self.numOfPieces,'(',int(((cur_piece*100)/self.numOfPieces)),'%)\r'
+        stdout.flush()
+
 
     def stats2csv(self,dfs,p2p):  
         try:
