@@ -101,6 +101,8 @@ class StreamWatcher:
                             gap = gap-1
                     order = order-1
                 if self.config['verbose']:
+                    # Give everyone some time and kill them all!
+                    time.sleep(10);
                     os.system("./run_all.sh stop")
             else:
                 self.sched(self.verify_vod_rate, self.prefetch)
