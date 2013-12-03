@@ -38,13 +38,14 @@ class PiecePicker:
         self._init_interests()
         self.streamWatcher = None
 
-    """
-    Initializes the self.interests list. this is a list of list in the size of priority_step
-    each inner list is in the size of self.numpieces
-    The higher the a piece in the interests index, the better it's priority
-    each piece could be in at most one priority (e.g if piece 274 is in priority 12 it can't be in any other priority)
-    """
+ 
     def _init_interests(self):
+        """
+        Initializes the self.interests list. this is a list of list in the size of priority_step
+        each inner list is in the size of self.numpieces
+        The higher the a piece in the interests index, the better it's priority
+        each piece could be in at most one priority (e.g if piece 274 is in priority 12 it can't be in any other priority)
+        """
         self.interests = [[] for x in xrange(self.priority_step)]
         self.level_in_interests = [self.priority_step] * self.numpieces
         interests = range(self.numpieces)
@@ -54,10 +55,11 @@ class PiecePicker:
             self.pos_in_interests[interests[i]] = i
         self.interests.append(interests)
 
-    """
-    Update that there is a peer that have this particular piece.
-    """
+    
     def got_have(self, piece):
+        """
+        Update that there is a peer that have this particular piece.
+        """
         self.totalcount+=1
         numint = self.numhaves[piece]
         self.numhaves[piece] += 1
@@ -83,10 +85,10 @@ class PiecePicker:
             self.interests.append([])
         self._shift_over(piece, self.interests[numint], self.interests[numint + 1])
 
-    """
-    Update that we no longer have a peer with that piece.
-    """
     def lost_have(self, piece):
+        """
+        Update that we no longer have a peer with that piece.
+        """
         self.totalcount-=1
         #The number of peers that holds this piece
         numint = self.numhaves[piece]
@@ -107,11 +109,12 @@ class PiecePicker:
             return
         self._shift_over(piece, self.interests[numint], self.interests[numint - 1])
     
-    """
-    Shifts piece from l1 to l2.
-    l1 and l2 are two pieces lists, each represents different priority step in self.interests  
-    """
+  
     def _shift_over(self, piece, l1, l2):
+        """
+        Shifts piece from l1 to l2.
+        l1 and l2 are two pieces lists, each represents different priority step in self.interests  
+        """
         assert self.superseed or (not self.has[piece] and self.priority[piece] >= 0)
         parray = self.pos_in_interests
         p = parray[piece]
@@ -193,25 +196,38 @@ class PiecePicker:
             self.crosscount2[numhaves+1] += 1
         self._remove_from_interests(piece)
 
-    """
-    return the index of the next piece to ask for
-    haves - list of pieces we know peers have
-    wantfunc - a function that return if we want that particular piece
-    complete_first - should we complete pieces that we already started to take care of?
-    """
+
     #### P2PVODEX start ####
     def next(self, haves, wantfunc, complete_first = False):
-        
-        return self.inOrder(haves, wantfunc)
+        """
+        return the index of the next piece to ask for
+        haves - list of pieces we know peers have
+        wantfunc - a function that return if we want that particular piece
+        complete_first - should we complete pieces that we already started to take care of?
+        """
+        return self.SimpleInOrder(haves, wantfunc)
         
     
-    def inOrder(self, haves, wantfunc):      
+    def inOrder(self, haves, wantfunc):
+        """
+        An In Order implementation which respects the playing point and prefetch time and
+        only ask for pieces after that
+        """
         t = int(time.time() - self.streamWatcher.startTime)
         if t > self.streamWatcher.delay:
-            intervalStart  =  int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
+            intervalStart  =  int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * \
+                                    self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
         else:
             intervalStart = 0
         for i in range(intervalStart, self.numpieces):
+            if haves[i] and wantfunc(i):
+                return i
+            
+    def SimpleInOrder(self, haves, wantfunc):
+        """
+        A simple In Order implementation used for the first Milestone
+        """      
+        for i in range(self.numpieces):
             if haves[i] and wantfunc(i):
                 return i
         
