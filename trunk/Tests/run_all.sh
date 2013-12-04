@@ -25,19 +25,14 @@ then
         echo "You did not specify a Client. Run it separately."
 else
         sleep $gap
-#        thr=1
         for ((thr=1; thr < $8 ; thr++));
-#        while [ $thr -lt $8]
         do
                 echo Spawn VOD $thr and sleep $gap
-                echo /usr/bin/python $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --security 0 --delay $DELAY --prefetchT $PREF --rate $RATE --out_dir $4 --order $thr --gap $3 --group_size $VOD_CLIENTS --alg 'ORIG' ./picture.$HOST.bmp.torrent& 
-                /usr/bin/python $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --security 0 --delay $DELAY --prefetchT $PREF  --rate $RATE --out_dir $4 --order $thr --gap $3 --group_size $8 --alg 'ORIG' ./picture.$HOST.bmp.torrent& 
+                ./run_client vod $thr '/usr/bin/python $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --security 0 --delay $DELAY --prefetchT $PREF --rate $RATE --out_dir $4 --order $thr --gap $3 --group_size $VOD_CLIENTS --alg 'ORIG' ./picture.$HOST.bmp.torrent' &
                 sleep $gap
-#                thr=`expr $thr + 1`
         done
         echo Spawn VOD $VOD_CLIENTS 
-        echo /usr/bin/python $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --verbose 1 --security 0 --delay $DELAY  --prefetchT $PREF  --rate $RATE --out_dir $4 --order $VOD_CLIENTS --gap $3 --group_size $VOD_CLIENTS --alg 'ORIG' ./picture.$HOST.bmp.torrent
-        /usr/bin/python $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --verbose 1 --security 0 --delay $DELAY  --prefetchT $PREF  --rate $RATE --out_dir $4 --order $thr --gap $3 --group_size $8 --alg 'ORIG' ./picture.$HOST.bmp.torrent
+        ./run_client vod $8 '/usr/bin/python $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --verbose 1 --security 0 --delay $DELAY  --prefetchT $PREF  --rate $RATE --out_dir $4 --order $VOD_CLIENTS --gap $3 --group_size $VOD_CLIENTS --alg 'ORIG' ./picture.$HOST.bmp.torrent'
 fi
 	;;
 	kill)
@@ -45,12 +40,25 @@ fi
         echo GOOD BYE 
 	;;
 	stop)
-        sleep 10
+		sleep 10
+		
+		# Wait for all of the VOD-Peers
+		for (( i=0; i<(${#pidvods[@]}-1); i++ ));
+		do
+			wait $pidvods[$i]
+		done
+		
+		# shut down         
         ./run_scenario_vod.sh stop
+        
         echo FINISHED TEST
 	;;
+	fail)
+		testResult = -1
+		./run_scenario_vod.sh kill
+		echo TEST FAILED
 	*)
-	echo "Usage: run_all.sh [start | stop]"
+	echo "Usage: run_all.sh [start | stop | kill | fail]"
 	exit
 	;;
 esac
