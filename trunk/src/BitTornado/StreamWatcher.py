@@ -13,12 +13,15 @@ import traceback
 
 
 class StreamWatcher:
-    def __init__(self, _sched , 
+    def __init__(self, _sched ,
+                       # ASSAF: added _doneflag 
+                       _doneflag,
                        _downloader, 
                        _storagewrapper ,
                        _config,_downmeasure):
         
         self.sched = _sched                              #rawserver tasks queue Instance
+        self.doneflag = _doneflag                        # ASSAF:
         self.downloader = _downloader                    #downloader Instance
         self.storagewrapper = _storagewrapper            #StorageWrapper Instance
         self.config = _config                            #Config Dictionary (Olds Argv)
@@ -104,6 +107,8 @@ class StreamWatcher:
                     # Give everyone some time and kill them all!
                     time.sleep(10);
                     os.system("./run_all.sh stop")
+                # ASSAF:
+                self.doneflag.set()
             else:
                 self.sched(self.verify_vod_rate, self.prefetch)
         except:
