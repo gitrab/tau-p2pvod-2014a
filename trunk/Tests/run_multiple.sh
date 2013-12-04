@@ -14,7 +14,7 @@ do
 	testResult = -1
 
 	# Run the test until success		
-	while [testResult == 0]
+	while [testResult != 0]
 	do
 		rm -rf $3/$i
 		echo mkdir $3/$i
