@@ -671,7 +671,9 @@ class BT1Download:
             self.set_super_seed()
         
         ###### GROUP VOD ######
+        # ASSAF: added self.rawserver.doneflag
         self.streamwatcher = StreamWatcher(self.rawserver.add_task,
+                                           self.rawserver.doneflag,
                                            self.downloader,
                                            self.storagewrapper,
                                            self.config,self.downmeasure)

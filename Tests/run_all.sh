@@ -28,11 +28,11 @@ else
         for ((thr=1; thr < $8 ; thr++));
         do
                 echo Spawn VOD $thr and sleep $gap
-                ./run_client vod $thr '/usr/bin/python $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --security 0 --delay $DELAY --prefetchT $PREF --rate $RATE --out_dir $4 --order $thr --gap $3 --group_size $VOD_CLIENTS --alg 'ORIG' ./picture.$HOST.bmp.torrent' &
+                ./run_client vod $thr "/usr/bin/python $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --security 0 --delay $DELAY --prefetchT $PREF --rate $RATE --out_dir $4 --order $thr --gap $3 --group_size $VOD_CLIENTS --alg 'ORIG' ./picture.$HOST.bmp.torrent" &
                 sleep $gap
         done
         echo Spawn VOD $VOD_CLIENTS 
-        ./run_client vod $8 '/usr/bin/python $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --verbose 1 --security 0 --delay $DELAY  --prefetchT $PREF  --rate $RATE --out_dir $4 --order $VOD_CLIENTS --gap $3 --group_size $VOD_CLIENTS --alg 'ORIG' ./picture.$HOST.bmp.torrent'
+        ./run_client vod $8 "/usr/bin/python $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --verbose 1 --security 0 --delay $DELAY  --prefetchT $PREF  --rate $RATE --out_dir $4 --order $VOD_CLIENTS --gap $3 --group_size $VOD_CLIENTS --alg 'ORIG' ./picture.$HOST.bmp.torrent"
 fi
 	;;
 	kill)
