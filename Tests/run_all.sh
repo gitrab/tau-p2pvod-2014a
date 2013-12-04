@@ -43,6 +43,8 @@ fi
 		sleep 10
 		
 		# Wait for all of the VOD-Peers
+		echo waiting for all vod peers to finish...
+		
 		for (( i=0; i<(${#pidvods[@]}-1); i++ ));
 		do
 			wait $pidvods[$i]
@@ -55,7 +57,7 @@ fi
 	;;
 	fail)
 		testResult = -1
-		./run_scenario_vod.sh kill
+		./run_scenario_vod.sh stop
 		echo TEST FAILED
 	*)
 	echo "Usage: run_all.sh [start | stop | kill | fail]"
