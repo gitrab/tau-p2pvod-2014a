@@ -44,6 +44,7 @@ class StreamWatcher:
         self.gap=int(self.config['gap'])
         self.init_csv(self.config['out_dir']+'statistics-order-'+self.config['order']+'-gap-'+str(self.gap)+'.csv')    
         self.prefetch = int(((float(self.prefetchT) / 100)*self.toKbytes(self.total))/self.rate)
+        self.orig = 0 #DivineSeeders: added the 'orig' piece as global
     
     def init_csv (self, csv):
         self.csvFile = csv
@@ -56,18 +57,20 @@ class StreamWatcher:
     def verify_vod_rate(self):
         try:
             t = int(time.time() - self.startTime)
-            Orig  =  int(((t - self.delay) * self.rate) / self.toKbytes(self.piece_size))
-            Dest  =  int(((t - self.delay  + self.prefetch ) * self.rate) / self.toKbytes(self.piece_size))
+            #[-] Orig  =  int(((t - self.delay) * self.rate) / self.toKbytes(self.piece_size))
+            Dest  =  int(((t - self.delay + self.prefetch ) * self.rate) / self.toKbytes(self.piece_size))
             #Orig & Dest are pieces indexes
             #(Calculation is done in KB to match self.rate which is given in KB)                                 
             if Dest>self.numOfPieces-1:
                 Dest = self.numOfPieces - 1
-            if Orig > Dest:
-                Orig = Dest
+            if self.orig > Dest:
+                self.orig = Dest
+       
+            print'ZZZ Dest = ',Dest,'Orig = ',self.orig,'self.numOfPieces=',self.numOfPieces
        
             if (not self.storagewrapper.am_I_complete()):
                 #Loop over the gap [Orig,Dest] to check this peer 'have' list:
-                for i in range(Orig,Dest+1):
+                for i in range(self.orig,Dest):
                     #Case 1 : piece wasn't downloaded at all till now and no pending request for it also:
                     if (self.storagewrapper.is_unstarted(i)):
                             self.total_dfs += self.piece_size
@@ -88,8 +91,12 @@ class StreamWatcher:
                                 self.total_dfs += chunk[1]
                                 self.numOfDirtyPiecesFromServer +=1   
                                 
-            dfs  = (self.total_dfs*100)/self.total
+            self.orig = Dest + 1
+            
+            dfs = (self.total_dfs*100)/self.total
+            
             self.stats2csv(dfs, self.p2p)
+            
             if(Dest == (self.numOfPieces-1)):
                 order = int(self.config['group_size']) - int(self.config['order'])
                 while(order > 0):
