@@ -98,8 +98,8 @@ class StreamWatcher:
                             self.stats2csv(dfs, self.p2p)
                             gap = gap-1
                     order = order-1
-                    # DivineSeeders: Test is over so exit with test-sucess code (3)
-                    sys.exit(3)
+                # DivineSeeders: Test is over so exit with test-sucess code (3)
+                os._exit(3)
             else:
                 self.sched(self.verify_vod_rate, self.prefetch)
         except:
