@@ -105,12 +105,16 @@ class StreamWatcher:
                             self.stats2csv(dfs, self.p2p)
                             gap = gap-1
                     order = order-1
-                # DivineSeeders: Test is over so exit with test-sucess code (3)
-                os._exit(3)
+                # DivineSeeders: terminate this client after the gap
+                self.sched(self.test_completed, order * self.gap * 16)
             else:
                 self.sched(self.verify_vod_rate, self.prefetch)
         except:
             traceback.print_exc()
+
+    # DivineSeeders: When test is over exit with test-sucess code (3)
+    def test_completed(self):
+        os._exit(3)
 
     def get_dirty_holes(self,dirty):
         if (not dirty):
