@@ -66,8 +66,6 @@ class StreamWatcher:
             if self.orig > Dest:
                 self.orig = Dest
        
-            print'ZZZ Dest = ',Dest,'Orig = ',self.orig,'self.numOfPieces=',self.numOfPieces
-       
             if (not self.storagewrapper.am_I_complete()):
                 #Loop over the gap [Orig,Dest] to check this peer 'have' list:
                 for i in range(self.orig,Dest):
@@ -90,12 +88,13 @@ class StreamWatcher:
                                 chunk  = j.next()
                                 self.total_dfs += chunk[1]
                                 self.numOfDirtyPiecesFromServer +=1   
-                                
-            self.orig = Dest + 1
             
             dfs = (self.total_dfs*100)/self.total
             
             self.stats2csv(dfs, self.p2p)
+            print 'DEBUG: vod ',self.config['order'],": [",self.orig,",",Dest,"] write (",dfs,",",self.p2p,")"
+            
+            self.orig = Dest + 1
             
             if(Dest == (self.numOfPieces-1)):
                 order = int(self.config['group_size']) - int(self.config['order'])
