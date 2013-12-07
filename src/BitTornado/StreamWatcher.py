@@ -163,7 +163,8 @@ class StreamWatcher:
     def stats2csv(self,dfs,p2p):  
         try:
             if (not os.path.exists(self.csvFile)):
-                FcsvWriter = csv.writer(open(self.csvFile, 'wb'))
+                csvFile = open(self.csvFile, 'wb')
+                FcsvWriter = csv.writer(csvFile)
                 FcsvWriter.writerow(['alg','dfs','p2p'])
                 no_data=0
                 order = int(self.config['order'])-1
@@ -174,9 +175,14 @@ class StreamWatcher:
                                 gap = gap-1
                         order = order-1
                 FcsvWriter.writerow([self.config['alg'],dfs,p2p])
+                csvFile.flush()
+                csvFile.close()
             else:
-                FcsvWriter = csv.writer(open(self.csvFile, 'a'))
+                csvFile = open(self.csvFile, 'a')
+                FcsvWriter = csv.writer(csvFile)
                 FcsvWriter.writerow([self.config['alg'],dfs,p2p])
+                csvFile.flush()
+                csvFile.close()
         except (IOError, OSError), e:
             print "IO Error:" + str(e)
 
