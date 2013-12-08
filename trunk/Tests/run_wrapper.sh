@@ -13,17 +13,31 @@ command=$3
 
 # Print the command and execute it
 echo $command
-$command; exitcode=$?
-echo EXIT: $1 $2 with exitcode $exitcode
 
 case $1 in
 	vod)
 		successcode=3
+		$command; exitcode=$?
+	;;
+	bttrack)
+		successcode=137
+		$command > /dev/null ; exitcode=$?
+	;;
+	seed)
+		successcode=137
+		$command; exitcode=$?
+	;;
+	peer)
+		successcode=137
+		$command; exitcode=$?
 	;;
 	*)
 		successcode=137
+		$command; exitcode=$?
 	;;
 esac
+
+echo EXIT: $1 $2 with exitcode $exitcode
 
 if [ $exitcode != $successcode ]
 then
