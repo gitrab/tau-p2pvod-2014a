@@ -1,0 +1,35 @@
+====================================================
+V2.00 - DivineSeeders : Assaf Krintza and Nir Malbin
+====================================================
+
+	StreamWatcher.py
+	===============
+	[*] the DFS was calculated wrong, some pieces were counted twice!
+	[*] if the client is 'verbose' (last one) it does not kill the rest. instead each client terminates when done independently.
+	[*] saves all statistics into memory and writing the CSV at the end
+	
+	run_wrapper.sh (NEW)
+	==================
+	[+] runs a command and checks it's exit code. if not success calls 'run_all.sh fail' to fail the entire test.
+	
+	run_test_check.sh \ run_run_check.sh  (NEW)
+	===================================
+	[+] check if a specific test\run is corrupted
+	
+	run_multipile.sh
+	============
+	[+] checks the exit code of 'run_all' and if the test failed another one is executed.
+	[+] runs 'run_run_check.sh' to make sure that the run was ended successfully
+	
+	run_all.sh
+	========
+	[+] run all vod peers with 'run_wrapper.sh'
+	[+] waits until all vod-peers processes exit
+	[+] returning the test result in the exit code.
+	[+] added an 'fail' parameter to indicate that the test has been failed
+	[-] remove 'stop' parameter. unnecessary.
+	
+	run_scenario_vod.sh
+	================
+	[+] runs the tracker, the seeders and peers with 'run_wrapper.sh'
+	[+] echos the amount of processes killed (kill&stop modes)
