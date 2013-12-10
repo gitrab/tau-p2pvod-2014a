@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#	client_wrapper.sh
+#	run_wrapper.sh
 #	04-12-2013
 #	Nir Malbin
 
@@ -19,21 +19,9 @@ case $1 in
 		successcode=3
 		$command; exitcode=$?
 	;;
-	bttrack)
-		successcode=137
-		$command > /dev/null ; exitcode=$?
-	;;
-	seed)
-		successcode=137
-		$command; exitcode=$?
-	;;
-	peer)
-		successcode=137
-		$command; exitcode=$?
-	;;
 	*)
 		successcode=137
-		$command; exitcode=$?
+		$command > /dev/null; exitcode=$?
 	;;
 esac
 

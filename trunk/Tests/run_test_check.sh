@@ -1,12 +1,18 @@
 #!/bin/bash
 #
-#	client_wrapper.sh
+#	run_test_checker.sh
 #	04-12-2013
 #	Nir Malbin
 
 if [ "$3" == "" ]
 then
-	echo "USAGE: VodsPeers Gap TestFolder"
+	echo "USAGE: vod_peers gap test_Folder [-f]"
+	exit -1
+fi
+
+if [ ! -d "$3" ]
+then
+	echo "Test folder $3 does not exists..."
 	exit -1
 fi
 
@@ -22,56 +28,22 @@ run=0
 
 while [ -d "$3/$run" ]
 do
-	echo -ne "\tTesting run $run... "
-	
-	runresult=1
-	
-	# Checks the peers count
-	peers=`ls -l $3/$run | grep -v ^l | wc -l`
-	peers=$[ $peers - 1 ]
-	
-	if [ $peers != $1 ]
+	./run_run_check.sh $1 $2 $3/$run $4; runresult=$?
+
+	if [ $runresult != 0 ]
 	then
-		#echo -e "\tERROR: Found $peers peers instead of $1!"
-		runresult=0
-	#else
-		#echo -e "\tPASS: Found $peers peers!"
+		result=0
 	fi
-	
-	# Check each peer CSV file
-	for ((  i=1 ;  i <= $peers;  i++  ))
-	do
-		if [ -f $3/$run/statistics-order-$i-gap-$2.csv ]
-		then
-			rows=`wc -l < $3/$run/statistics-order-$i-gap-$2.csv`
 			
-			if [ $rows != $neededrows ]
-			then
-				#echo -e "\t\tERROR: Found $rows instead of $neededrows in peer $i!"
-				runresult=0
-			#else
-				#echo -e "\t\tPASS: $rows in statistics-order-$i-gap-$2.csv"
-			fi
-		fi
-	done
-	
-	if [ $runresult == 0 ]
-	then
-		echo "FAILED!"
-		result=0 
-	else
-		echo "PASS!"
-	fi
-	
 	run=$run+1
-	
 done
 
 if [ $result == 1 ]
 then
-	echo "Check OK!"
+	echo "Test ${3##*/} OK!"
 	exit 0
 else
-	echo "Check Failed!"
+	echo "Test ${3##*/} Failed!"
 	exit -1
 fi
+
