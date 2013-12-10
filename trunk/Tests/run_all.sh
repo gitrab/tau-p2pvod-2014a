@@ -35,18 +35,25 @@ else
         sleep $gap
         for ((thr=1; thr < $8 ; thr++));
         do
-                echo Spawn VOD $thr and sleep $gap
-                ./run_wrapper.sh vod $thr "$TR_PY $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --security 0 --delay $DELAY --prefetchT $PREF --rate $RATE --out_dir $4 --order $thr --gap $3 --group_size $8 --alg ORIG $TORRENTS/picture.$HOST.bmp.torrent" & pidvods[$thr]=$!
-                sleep $gap
+        	if [ -f $BT_SCRATCH/running ]
+        	then
+               	echo Spawn VOD $thr and sleep $gap
+               	./run_wrapper.sh vod $thr "$TR_PY $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --security 0 --delay $DELAY --prefetchT $PREF --rate $RATE --out_dir $4 --order $thr --gap $3 --group_size $8 --alg ORIG $TORRENTS/picture.$HOST.bmp.torrent" & pidvods[$thr]=$!
+               	sleep $gap
+        	fi	
         done
-    	echo Spawn VOD $8
-        ./run_wrapper.sh vod $8 "$TR_PY $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --verbose 1 --security 0 --delay $DELAY  --prefetchT $PREF  --rate $RATE --out_dir $4 --order $8 --gap $3 --group_size $8 --alg ORIG $TORRENTS/picture.$HOST.bmp.torrent" & pidvods[$thr]=$!
+        
+        if [ -f $BT_SCRATCH/running ]
+        then
+    		echo Spawn VOD $8
+        	./run_wrapper.sh vod $8 "$TR_PY $2 --saveas  $BT_SCRATCH/picture.$HOST-$thr.bmp  $MAX_UP  --verbose 1 --security 0 --delay $DELAY  --prefetchT $PREF  --rate $RATE --out_dir $4 --order $8 --gap $3 --group_size $8 --alg ORIG $TORRENTS/picture.$HOST.bmp.torrent" & pidvods[$thr]=$!
     
-    	# wait for all of the vod peers
-		for pid in ${pidvods[*]}
-		do
-			wait $pid
-		done
+	    	# wait for all of the vod peers
+			for pid in ${pidvods[*]}
+			do
+				wait $pid
+			done
+		fi
 		
 		# check if the test has been failed or not
 		if [ ! -f $BT_SCRATCH/running ]
