@@ -22,9 +22,9 @@ do
 		echo ./run_all.sh start $1 $2 $3/$i/ $5 $6 $7 $8
 		./run_all.sh start $1 $2 $3/$i/ $5 $6 $7 $8; testResult=$?
 		
-		if [ $testResult == 1 ]
+		if [ $testResult == 0 ]
 		then
-			./run_test_check.sh $6 $2 $3; testResult=$?
+			./run_run_check.sh $8 $2 $3/$i -f; testResult=$?
 		fi
 		
     done
