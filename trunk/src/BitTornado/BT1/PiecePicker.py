@@ -205,7 +205,7 @@ class PiecePicker:
         wantfunc - a function that return if we want that particular piece
         complete_first - should we complete pieces that we already started to take care of?
         """
-        return self.SimpleInOrder(haves, wantfunc)
+        return self.inOrder(haves, wantfunc)
         
     
     def inOrder(self, haves, wantfunc):
