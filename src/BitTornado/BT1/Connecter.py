@@ -55,7 +55,12 @@ class Connection:
 
     def get_readable_id(self):
         return self.connection.get_readable_id()
-
+    
+    #### P2PVODEX start ####
+    def isVODPeer(self):
+        return (self.get_id()[0] == 'V')
+    #### P2PVODEX end ###
+    
     def close(self):
         if DEBUG:
             print 'connection closed'
@@ -192,6 +197,10 @@ class Connecter:
         return len(self.connections)
 
     def connection_made(self, connection):
+        """
+        Adds a connection to the connections list.
+        Every connection has an Upload object and a SingleDownload object.
+        """
         c = Connection(connection, self)
         self.connections[connection] = c
         c.upload = self.make_upload(c, self.ratelimiter, self.totalup)

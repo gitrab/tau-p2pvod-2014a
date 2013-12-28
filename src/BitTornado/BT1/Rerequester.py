@@ -334,6 +334,7 @@ class Rerequester:
         self.trackerid = r.get('tracker id', self.trackerid)
         self.last = r.get('last')
 #        ps = len(r['peers']) + self.howmany()
+        #Assaf: This is the list of peers. 
         p = r['peers']
         peers = []
         if type(p) == type(''):

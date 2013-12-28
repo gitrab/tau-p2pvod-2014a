@@ -62,6 +62,14 @@ class Statistics:
 
     def update(self):
         s = Statistics_Response()
+        #### P2PVODEX start ####
+        numOfVODPeers = 0
+        for connection in self.connecter.connections.values():
+            if connection.isVODPeer():
+                numOfVODPeers += 1
+                
+        s.numOfVODPeers = numOfVODPeers
+        #### P2PVODEX end ###
         s.upTotal = self.upmeasure.get_total()
         s.downTotal = self.downmeasure.get_total()
         s.last_failed = self.rerequest_lastfailed()
@@ -172,6 +180,6 @@ class Statistics:
         s.filecomplete = self.filecomplete
         s.fileinplace = self.fileinplace
         s.filelistupdated = self.filelistupdated
-
+        
         return s
 

@@ -36,9 +36,11 @@ class PiecePicker:
         self.superseed = False
         self.seeds_connected = 0
         self._init_interests()
+        #### P2PVODEX start ####
         self.streamWatcher = None
-
- 
+        self.connecter = None
+        #### P2PVODEX start ####
+        
     def _init_interests(self):
         """
         Initializes the self.interests list. this is a list of list in the size of priority_step
@@ -198,6 +200,21 @@ class PiecePicker:
 
 
     #### P2PVODEX start ####
+    
+    def getPercentageOfVODPeers(self):
+        """
+        Returns the percentage of VOD peers in the current connections list
+        or None if the connection list length is 0
+        """
+        numOfVODPeers = 0.0
+        
+        for connection in self.connecter.connections.values():
+            if connection.isVODPeer():
+                numOfVODPeers += 1
+                
+        if float(len(self.connecter.connections.values())) != 0:
+            return  numOfVODPeers / float(len(self.connecter.connections.values()))
+        
     def next(self, haves, wantfunc, complete_first = False):
         """
         return the index of the next piece to ask for
