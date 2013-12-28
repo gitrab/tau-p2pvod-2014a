@@ -15,7 +15,13 @@ except ImportError:
 
 mapbase64 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.-'
 
-_idprefix = version_short[0]
+#### P2PVODEX start ####
+#_idprefix = version_short[0]
+# Changes the prefix of the peer ID so we can identify
+# a VOD peer
+_idprefix = 'V'
+#### P2PVODEX end ####
+
 for subver in version_short[2:].split('.'):
     try:
         subver = int(subver)

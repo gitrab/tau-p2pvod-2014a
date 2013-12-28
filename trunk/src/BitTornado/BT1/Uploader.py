@@ -24,7 +24,11 @@ class Upload:
         self.cleared = True
         self.interested = False
         self.super_seeding = False
+        
+        # ASSAF: I think this is the list of requested pieces
+        # Every entry is a tuple in the form of (index, begin, length)
         self.buffer = []
+        
         self.measure = Measure(config['max_rate_period'], config['upload_rate_fudge'])
         self.was_ever_interested = False
         if storage.get_amount_left() == 0:

@@ -138,8 +138,11 @@ defaults = [
         "the number of uploads to fill out to with extra optimistic unchokes"),
     ('max_files_open', 50,
         'the maximum number of files to keep open at a time, 0 means no limit'),
+    #### P2PVODEX start ####
+    #ASSAF: default was 30
     ('round_robin_period', 30,
         "the number of seconds between the client's switching upload targets"),
+    #### P2PVODEX end ####
     ('super_seeder', 0,
         "whether to use special upload-efficiency-maximizing routines (only for dedicated seeds)"),
     ('security', 1,
@@ -678,6 +681,7 @@ class BT1Download:
         
         #### P2PVODEX start ####
         self.picker.streamWatcher = self.streamwatcher
+        self.picker.connecter = self.connecter
         #### P2PVODEX end  ####
                                            
         self.rawserver.add_task(self.streamwatcher.verify_vod_rate,int(self.config['delay']))

@@ -64,6 +64,7 @@ class Choker:
             return
         if maxuploads > 1:
             for c in self.connections:
+                
                 u = c.get_upload()
 
 #HILLEL:
@@ -71,7 +72,6 @@ class Choker:
                 if (d.get_rate() != u.get_rate()) and (u.get_rate()>(d.get_rate()/4)):
                     u.choke()
 #-------
-
                 if not u.is_interested():
                     continue
                 if self.done():
@@ -82,11 +82,15 @@ class Choker:
                     r = d.get_rate()
                     if r < 1000 or d.is_snubbed():
                         continue
-                preferred.append((-r, c))
+                #### P2PVODEX start ####
+                preferred.append((int(not u.connection.isVODPeer()), -r ,c))
+                
+                
             self.last_preferred = len(preferred)
             preferred.sort()
             del preferred[maxuploads-1:]
-            preferred = [x[1] for x in preferred]
+            preferred = [x[2] for x in preferred]
+            #### P2PVODEX end ####
         count = len(preferred)
         hit = False
         to_unchoke = []

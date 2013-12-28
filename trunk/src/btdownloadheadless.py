@@ -70,6 +70,9 @@ class HeadlessDisplayer:
         self.shareRating = ''
         self.seedStatus = ''
         self.peerStatus = ''
+        #### P2PVODEX start ####
+        self.numOfVODPeers = ''
+        #### P2PVODEX end ####
         self.errors = []
         self.last_update_time = -1
         self.verbose = 0
@@ -121,6 +124,7 @@ class HeadlessDisplayer:
             
             self.timeTot = hours(self.last_update_time - self.first_update_time)
             print '\n\n\n\n'
+            self.numOfVODPeers = statistics.numOfVODPeers
         for err in self.errors:
             print 'ERROR:\n' + err + '\n'
         if self.verbose:
@@ -135,6 +139,9 @@ class HeadlessDisplayer:
             print 'upload rate:      ', self.upRate,'\r'
             print 'seed status:      ', self.seedStatus,'\r'
             print 'peer status:      ', self.peerStatus,'\r'
+            #### P2PVODEX start ####
+            print 'VOD Peers:        ', self.numOfVODPeers,'\r'
+            #### P2PVODEX end ####
             stdout.flush()
         dpflag.set()        
 
