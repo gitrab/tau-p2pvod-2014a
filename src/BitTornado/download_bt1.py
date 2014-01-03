@@ -685,6 +685,7 @@ class BT1Download:
         
         #### P2PVODEX start ####
         self.picker.streamWatcher = self.streamwatcher
+        self.picker.storagewrapper = self.streamwatcher.storagewrapper
         self.picker.connecter = self.connecter
         
         #### P2PVODEX end  ####
