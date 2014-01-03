@@ -288,7 +288,7 @@ class PiecePicker:
             return p
         elif (self.getViewingPiece() < len(haves)):
             p = self.smartRarestFirst(haves, wantfunc, complete_first)
-            
+            print "Used smartRarestFirst. next piece is: %d" % p
             return p
         else:
             p = self.rarestFirst(haves, wantfunc, complete_first)
