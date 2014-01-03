@@ -249,6 +249,7 @@ class PiecePicker:
         complete_first - should we complete pieces that we already started to take care of?
         """
         inOrderWindow = int(max(0, 0.75 - 4 * self.getPercentageOfNotSeedersVOD()) * len(haves))
+        print "Window size is: %d" % inOrderWindow
         return self.hybridNext(inOrderWindow, haves, wantfunc, complete_first)
     
     def dynamicHybridNext(self, haves, wantfunc, complete_first):
@@ -282,11 +283,17 @@ class PiecePicker:
         """
         if ((inOrderWindow > 0) and 
             (self.getSafeInterval(haves, self.getViewingPiece(), inOrderWindow) <= inOrderWindow)):
-            return (self.inOrder(haves, wantfunc))
+            p = self.inOrder(haves, wantfunc)
+            print "Used InOrder. next piece is: %d" % p
+            return p
         elif (self.getViewingPiece() < len(haves)):
-            return (self.smartRarestFirst(haves, wantfunc, complete_first))
+            p = self.smartRarestFirst(haves, wantfunc, complete_first)
+            
+            return p
         else:
-            return (self.rarestFirst(haves, wantfunc, complete_first))
+            p = self.rarestFirst(haves, wantfunc, complete_first)
+            print "Used RarestFirst. next piece is: %d" % p
+            return p
     
     def getSafeInterval(self, haves, start, max = -1):
         if (max == -1) or (start + max > len(haves)):

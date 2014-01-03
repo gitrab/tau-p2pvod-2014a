@@ -95,6 +95,7 @@ class Choker:
             preferred.sort()
             del preferred[maxuploads-1:]
             preferred = [x[indexOfConnections] for x in preferred]
+            print "preferred list top is %s" % (preferred[0].get_id())
             #### P2PVODEX end ####
         count = len(preferred)
         hit = False
