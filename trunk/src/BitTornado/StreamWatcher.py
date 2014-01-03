@@ -116,6 +116,7 @@ class StreamWatcher:
         try:
             if self.stats2csv():
                 stdout.flush()
+                Logger.getLogger().flush()
                 os._exit(3)
                 return
         except:
