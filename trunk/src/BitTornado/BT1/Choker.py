@@ -113,6 +113,7 @@ class Choker:
                 else:
                     u.choke()
         for u in to_unchoke:
+            Logger.getLogger().append("CHOKER","Unchoking - %s" % u.connection.get_id())
             u.unchoke()
 
     def connection_made(self, connection, p = None):
