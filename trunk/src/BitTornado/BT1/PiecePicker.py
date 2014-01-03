@@ -145,8 +145,8 @@ class PiecePicker:
         self.cutoff = max(self.rarest_first_priority_cutoff-self.seeds_connected,0)
      #### P2PVODEX end ####
 
-    def became_seed(self):
-        self.got_seed()
+    def became_seed(self, isVODSeed):
+        self.got_seed(isVODSeed)
         self.totalcount -= self.numpieces
         self.numhaves = [i-1 for i in self.numhaves]
         if self.superseed or not self.done:

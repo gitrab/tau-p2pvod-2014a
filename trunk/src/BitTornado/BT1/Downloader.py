@@ -270,7 +270,7 @@ class SingleDownload:
             self.have[index] = True
             self.downloader.picker.got_have(index)
             if self.have.complete():
-                self.downloader.picker.became_seed()
+                self.downloader.picker.became_seed(self.connection.isVODPeer())
                 if self.downloader.storage.am_I_complete():
                     self.downloader.add_disconnected_seed(self.connection.get_readable_id())
                     self.connection.close()
