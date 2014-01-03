@@ -33,7 +33,7 @@ class Logger:
         with open(self.filePath, 'a') as file:
             writen = 0
             while (writen < count and len(self.logQueue) > 0):
-                logMsg = self.logQueue.pop()
+                logMsg = self.logQueue.popleft()
                 file.write(logMsg + "\n")
                 writen += 1
                 
