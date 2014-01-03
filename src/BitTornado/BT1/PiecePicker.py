@@ -222,20 +222,71 @@ class PiecePicker:
         wantfunc - a function that return if we want that particular piece
         complete_first - should we complete pieces that we already started to take care of?
         """
-        return self.inOrder(haves, wantfunc)
+        return (self.dynamicHybridNext(5, haves, wantfunc, complete_first))
+    
+    def dynamicHybridNext(self, startWindow, haves, wantfunc, complete_first):
+        if (not hasattr(self, 'inOrderWindow')):
+            self.inOrderWindow = startWindow
+            self.prevDfs = self.streamWatcher.total_dfs*1000 / self.streamWatcher.total
+            self.lastWindowUpdate = time.time()
+        
+        if ((time.time() - self.lastWindowUpdate) > 10):
+            currDfs = self.streamWatcher.total_dfs*1000 / self.streamWatcher.total
+            dfsDiff = currDfs - self.prevDfs
+            
+            self.prevDfs = currDfs
+            self.lastWindowUpdate = time.time()
+            
+            if (dfsDiff >= 10):
+                self.inOrderWindow = min(len(haves), self.inOrderWindow + 1)
+            elif (dfsDiff < 5):
+                self.inOrderWindow = max(0, self.inOrderWindow - 1)
+            
+            print "Window: t=",int(self.lastWindowUpdate),"order=", self.streamWatcher.config['order'],"dfs:",currDfs,dfsDiff,"window=",self.inOrderWindow
+                
+        return (self.hybridNext(self.inOrderWindow, haves, wantfunc, complete_first))
         
     
-    def inOrder(self, haves, wantfunc):
+    def hybridNext(self, inOrderWindow, haves, wantfunc, complete_first = False):
         """
-        An In Order implementation which respects the playing point and prefetch time and
-        only ask for pieces after that
+        An hybrid method to pick pieces including inOrder and rarestFirst.
+            The method pick pieces by inOrder within a specific pre-defined window and
+            after goes to pick by rarestFirst.
         """
+        safeInterval = self.getSafeInterval(haves, self.getViewingPiece(), inOrderWindow)
+        
+        if (safeInterval <= inOrderWindow):
+            return (self.inOrder(haves, wantfunc))
+        else:
+            return (self.smartRarestFirst(haves, wantfunc, complete_first))
+    
+    def getSafeInterval(self, haves, start, max = -1):
+        if (max == -1) or (start + max > len(haves)):
+            max = len(haves) - start
+        
+        i = start
+        
+        while (i < (start + max)) and haves[i]:
+            i = i + 1
+
+        return (i - start)
+    
+    def getViewingPiece(self):
         t = int(time.time() - self.streamWatcher.startTime)
         if t > self.streamWatcher.delay:
             intervalStart  =  int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * \
                                     self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
         else:
             intervalStart = 0
+            
+        return intervalStart
+    
+    def inOrder(self, haves, wantfunc):
+        """
+        An In Order implementation which respects the playing point and prefetch time and
+        only ask for pieces after that
+        """
+        intervalStart = self.getViewingPiece()
         for i in range(intervalStart, self.numpieces):
             if haves[i] and wantfunc(i):
                 return i
@@ -248,6 +299,10 @@ class PiecePicker:
             if haves[i] and wantfunc(i):
                 return i
         
+    def smartRarestFirst(self, haves, wantfunc, complete_first = False):
+        newWantFunc = lambda i: \
+            ((i >= self.getViewingPiece()) and wantfunc(i))
+        return (self.rarestFirst(haves, newWantFunc, complete_first))
     
     def rarestFirst(self, haves, wantfunc, complete_first = False):
         cutoff = self.numgot < self.rarest_first_cutoff
