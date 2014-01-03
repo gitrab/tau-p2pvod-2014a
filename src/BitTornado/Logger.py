@@ -8,16 +8,18 @@ import time
 from collections import deque
 
 class Logger:
-        
+    
+    singletone = None
+    
     def __init__(self, filePath, sched, writeInterval = 30):
         self.filePath = filePath
         self.sched = sched
         self.writeInterval = writeInterval
         self.logQueue = deque()
-        self.__logWork()
+        self._logWork()
         
     def append(self, type, msg):
-        self.logQueue.append("[%s] %s: %s" % time.strftime("%H:%M:%S"), type , msg)
+        self.logQueue.append("[%s] %s: %s" % (time.strftime("%H:%M:%S"), type , msg))
     
     def flush(self):
         self.write(len(self.logQueue))
@@ -26,7 +28,7 @@ class Logger:
         if (len(self.logQueue) == 0):
             return
         
-        with open(self.csvFile, 'a') as file:
+        with open(self.filePath, 'a') as file:
             writen = 0
             
             while (writen < count and len(self.logQueue) > 0):
@@ -36,6 +38,14 @@ class Logger:
                 
             file.flush()
             
-    def __logWork(self):
+    def _logWork(self):
         self.write()
-        self.sched(self.__logWork, self.writeInterval)
+        self.sched(self._logWork, self.writeInterval)
+        
+    @staticmethod
+    def initLogger(filePath, sched, writeInterval = 30):
+        singletone = Logger(filePath, sched, writeInterval)
+        
+    @staticmethod
+    def getLogger():
+        return (singletone)
