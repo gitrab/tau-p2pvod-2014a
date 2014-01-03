@@ -88,7 +88,7 @@ class Choker:
                     conncetionIndex = 2
                     preferred.append((int(not u.connection.isVODPeer()), -r ,c))
                 else:
-                    conncetionIndex = 2
+                    conncetionIndex = 1
                     preferred.append((-r ,c))
                 
             self.last_preferred = len(preferred)
