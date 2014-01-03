@@ -41,6 +41,7 @@ class PiecePicker:
         #### P2PVODEX start ####
         self.streamWatcher = None
         self.connecter = None
+        self.storagewrapper = streamWatcher.storagewrapper
         self.vod_seeds_connected = 0
         self.logger = Logger.getLogger()
         #### P2PVODEX start ####
@@ -244,6 +245,21 @@ class PiecePicker:
         
         return  (self.getNumOfVODPeers() - self.vod_seeds_connected) / float(consNum)
     
+    def formatPiecesGot(self):
+        formatted = "("
+        vp = self.getViewingPiece()
+        for i in len(self.numpieces):
+            if vp == i:
+                p = '*'
+            elif self.storagewrapper.do_I_have(i):
+                p = '+'
+            elif i in self.started:
+                p = '/'
+            else:
+                p = '-'
+            formatted += p
+        return formatted + ')'
+    
     def next(self, haves, wantfunc, complete_first = False):
         """
         return the index of the next piece to ask for
@@ -253,6 +269,7 @@ class PiecePicker:
         """
         inOrderWindow = int(max(0, 0.75 - 4 * self.getPercentageOfNotSeedersVOD()) * len(haves))
         self.logger.append("PIECEPICKER","Window Size %d" % inOrderWindow)
+        self.logger.append("PIECEPICKER","Pieces Status - %s" % self.formatPiecesGot())
         return self.hybridNext(inOrderWindow, haves, wantfunc, complete_first)
     
     def dynamicHybridNext(self, haves, wantfunc, complete_first):
