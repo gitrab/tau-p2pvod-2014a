@@ -201,19 +201,23 @@ class PiecePicker:
 
     #### P2PVODEX start ####
     
-    def getPercentageOfVODPeers(self):
+    def getNumOfVODPeers(self):
         """
-        Returns the percentage of VOD peers in the current connections list
-        or None if the connection list length is 0
+        Returns the number of VOD peers in the current connections list
         """
-        numOfVODPeers = 0.0
+        numOfVODPeers = 0
         
         for connection in self.connecter.connections.values():
             if connection.isVODPeer():
                 numOfVODPeers += 1
                 
-        if float(len(self.connecter.connections.values())) != 0:
-            return  numOfVODPeers / float(len(self.connecter.connections.values()))
+        return numOfVODPeers
+    
+    def getPercentageOfVODPeers(self):
+        """
+        Returns the percentage of VOD peers in the current connections list
+        """
+        return  self.getNumOfVODPeers() / float(len(self.connecter.connections.values()))
         
     def next(self, haves, wantfunc, complete_first = False):
         """
@@ -222,15 +226,21 @@ class PiecePicker:
         wantfunc - a function that return if we want that particular piece
         complete_first - should we complete pieces that we already started to take care of?
         """
-        return (self.dynamicHybridNext(5, haves, wantfunc, complete_first))
+        inOrderWindow = int(max(0, 0.25 - 0.5 * self.getPercentageOfVODPeers()) * len(haves))
+        p = self.hybridNext(inOrderWindow, haves, wantfunc, complete_first)
+        
+        if p == None:
+            p = self.rarestFirst(haves, wantfunc, complete_first)
+            
+        return p
     
-    def dynamicHybridNext(self, startWindow, haves, wantfunc, complete_first):
+    def dynamicHybridNext(self, haves, wantfunc, complete_first):
         if (not hasattr(self, 'inOrderWindow')):
-            self.inOrderWindow = startWindow
+            self.inOrderWindow = int(max(0, 0.25 - 0.5 * self.getPercentageOfVODPeers()) * len(haves))
             self.prevDfs = self.streamWatcher.total_dfs*1000 / self.streamWatcher.total
             self.lastWindowUpdate = time.time()
         
-        if ((time.time() - self.lastWindowUpdate) > 10):
+        if ((time.time() - self.lastWindowUpdate) > self.streamWatcher.prefetchT + 5):
             currDfs = self.streamWatcher.total_dfs*1000 / self.streamWatcher.total
             dfsDiff = currDfs - self.prevDfs
             
@@ -239,7 +249,7 @@ class PiecePicker:
             
             if (dfsDiff >= 10):
                 self.inOrderWindow = min(len(haves), self.inOrderWindow + 1)
-            elif (dfsDiff < 5):
+            elif (dfsDiff < 1):
                 self.inOrderWindow = max(0, self.inOrderWindow - 1)
             
             print "Window: t=",int(self.lastWindowUpdate),"order=", self.streamWatcher.config['order'],"dfs:",currDfs,dfsDiff,"window=",self.inOrderWindow
@@ -290,6 +300,8 @@ class PiecePicker:
         for i in range(intervalStart, self.numpieces):
             if haves[i] and wantfunc(i):
                 return i
+        
+        return None
             
     def SimpleInOrder(self, haves, wantfunc):
         """
@@ -298,6 +310,8 @@ class PiecePicker:
         for i in range(self.numpieces):
             if haves[i] and wantfunc(i):
                 return i
+        
+        return None
         
     def smartRarestFirst(self, haves, wantfunc, complete_first = False):
         newWantFunc = lambda i: \
