@@ -42,6 +42,7 @@ class PiecePicker:
         self.streamWatcher = None
         self.connecter = None
         self.vod_seeds_connected = 0
+        self.logger = Logger.getLogger()
         #### P2PVODEX start ####
         
     def _init_interests(self):
@@ -251,6 +252,7 @@ class PiecePicker:
         complete_first - should we complete pieces that we already started to take care of?
         """
         inOrderWindow = int(max(0, 0.75 - 4 * self.getPercentageOfNotSeedersVOD()) * len(haves))
+        self.logger.append("Window Size", "%d" % inOrderWindow)
         return self.hybridNext(inOrderWindow, haves, wantfunc, complete_first)
     
     def dynamicHybridNext(self, haves, wantfunc, complete_first):
@@ -284,11 +286,17 @@ class PiecePicker:
         """
         if ((inOrderWindow > 0) and 
             (self.getSafeInterval(haves, self.getViewingPiece(), inOrderWindow) <= inOrderWindow)):
-            return (self.inOrder(haves, wantfunc))
+            p = self.inOrder(haves, wantfunc)
+            self.logger.append("Used inOrder. Piece", "%d" % p)
+            return p
         elif (self.getViewingPiece() < len(haves)):
-            return (self.smartRarestFirst(haves, wantfunc, complete_first))
+            p = self.smartRarestFirst(haves, wantfunc, complete_first)
+            self.logger.append("Used smartRarestFirst. Piece", "%d" % p)
+            return p
         else:
-            return (self.rarestFirst(haves, wantfunc, complete_first))
+            p = self.rarestFirst(haves, wantfunc, complete_first)
+            self.logger.append("Used RarestFirst. Piece", "%d" % p)
+            return p
     
     def getSafeInterval(self, haves, start, max = -1):
         if (max == -1) or (start + max > len(haves)):
