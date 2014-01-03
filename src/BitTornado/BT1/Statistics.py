@@ -69,6 +69,7 @@ class Statistics:
                 numOfVODPeers += 1
                 
         s.numOfVODPeers = numOfVODPeers
+        s.numOfVODSeeds = self.picker.vod_seeds_connected
         #### P2PVODEX end ###
         s.upTotal = self.upmeasure.get_total()
         s.downTotal = self.downmeasure.get_total()
