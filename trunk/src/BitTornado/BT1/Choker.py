@@ -3,6 +3,7 @@
 
 from random import randrange, shuffle
 from BitTornado.clock import clock
+from BitTornado.Logger import Logger
 try:
     True
 except:
@@ -21,6 +22,7 @@ class Choker:
         self.done = done
         self.super_seed = False
         self.paused = False
+        self.logger = Logger.getLogger()
         schedule(self._round_robin, 5)
 
     def set_round_robin_period(self, x):
@@ -55,7 +57,7 @@ class Choker:
                     break
         self._rechoke()
 
-    def _rechoke(self):
+    def _rechoke(self, isVODPreferred = False):
         preferred = []
         maxuploads = self.config['max_uploads']
         if self.paused:
@@ -83,15 +85,18 @@ class Choker:
                     if r < 1000 or d.is_snubbed():
                         continue
                 #### P2PVODEX start ####
-                preferred.append((int(not u.connection.isVODPeer()), -r ,c))
-                
+                if isVODPreferred:
+                    conncetionIndex = 2
+                    preferred.append((int(not u.connection.isVODPeer()), -r ,c))
+                else:
+                    conncetionIndex = 2
+                    preferred.append((-r ,c))
                 
             self.last_preferred = len(preferred)
             preferred.sort()
             del preferred[maxuploads-1:]
-            preferred = [x[2] for x in preferred]
-            print "preferred list top is %s" % (preferred[0].get_id())
-            #### P2PVODEX end ####
+            preferred = [x[conncetionIndex] for x in preferred]
+            self.logger.append("preferred list top is"," %s" % preferred[0].get_id())
         count = len(preferred)
         hit = False
         to_unchoke = []
