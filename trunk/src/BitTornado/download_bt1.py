@@ -356,7 +356,9 @@ class BT1Download:
         self.myid = id
         self.rawserver = rawserver
         self.port = port
-        
+         #### P2PVODEX start ####
+        Logger.initLogger("%s%s.log" % (self.config['out_dir'],self.config['order']), self.rawserver.add_task)
+         #### P2PVODEX end ####
         self.info = self.response['info']
         self.pieces = [self.info['pieces'][x:x+20]
                        for x in xrange(0, len(self.info['pieces']), 20)]
@@ -683,7 +685,7 @@ class BT1Download:
         #### P2PVODEX start ####
         self.picker.streamWatcher = self.streamwatcher
         self.picker.connecter = self.connecter
-        Logger.initLogger("%s%s.log" % (self.config['out_dir'],self.config['order']), self.rawserver.add_task)
+        
         #### P2PVODEX end  ####
                                            
         self.rawserver.add_task(self.streamwatcher.verify_vod_rate,int(self.config['delay']))

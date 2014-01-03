@@ -22,7 +22,6 @@ class Choker:
         self.done = done
         self.super_seed = False
         self.paused = False
-        self.logger = Logger.getLogger()
         schedule(self._round_robin, 5)
 
     def set_round_robin_period(self, x):
@@ -96,7 +95,7 @@ class Choker:
             preferred.sort()
             del preferred[maxuploads-1:]
             preferred = [x[conncetionIndex] for x in preferred]
-            self.logger.append("preferred list top is"," %s" % preferred[0].get_id())
+            Logger.getLogger().append("CHOKER","Top of preferred list is - %s" % preferred[0].get_id())
         count = len(preferred)
         hit = False
         to_unchoke = []
