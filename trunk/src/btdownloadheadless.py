@@ -72,6 +72,7 @@ class HeadlessDisplayer:
         self.peerStatus = ''
         #### P2PVODEX start ####
         self.numOfVODPeers = ''
+        self.numOfVODSeeds = ''
         #### P2PVODEX end ####
         self.errors = []
         self.last_update_time = -1
