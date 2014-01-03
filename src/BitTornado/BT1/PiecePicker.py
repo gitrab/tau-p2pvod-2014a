@@ -5,6 +5,8 @@ import time
 from random import randrange, shuffle
 from BitTornado.clock import clock
 from BitTornado.StreamWatcher import StreamWatcher 
+from BitTornado.Logger import Logger
+
 try:
     True
 except:
@@ -269,7 +271,7 @@ class PiecePicker:
             elif (dfsDiff < 1):
                 self.inOrderWindow = max(0, self.inOrderWindow - 1)
             
-            print "Window: t=",int(self.lastWindowUpdate),"order=", self.streamWatcher.config['order'],"dfs:",currDfs,dfsDiff,"window=",self.inOrderWindow
+            Logger.getLogger().append("WINDOW_UPDATE", "%d %d %d" % (currDfs, dfsDiff,self.inOrderWindow))
                 
         return (self.hybridNext(self.inOrderWindow, haves, wantfunc, complete_first))
         
