@@ -6,6 +6,7 @@ Created on 03/01/2013
 
 import time
 from collections import deque
+import os
 
 class Logger:
     
@@ -43,6 +44,8 @@ class Logger:
         
     @staticmethod
     def initLogger(filePath, sched, writeInterval = 30):
+        if not os.path.exists(os.path.dirname(filePath)):
+            os.makedirs(os.path.dirname(filePath))
         Logger.singletone = Logger(filePath, sched, writeInterval)
         
     @staticmethod

@@ -357,7 +357,7 @@ class BT1Download:
         self.rawserver = rawserver
         self.port = port
          #### P2PVODEX start ####
-        Logger.initLogger("%slogs\%s.log" % (self.config['out_dir'],self.config['order']), self.rawserver.add_task)
+        Logger.initLogger("%slog/%s.log" % (self.config['out_dir'],self.config['order']), self.rawserver.add_task)
          #### P2PVODEX end ####
         self.info = self.response['info']
         self.pieces = [self.info['pieces'][x:x+20]

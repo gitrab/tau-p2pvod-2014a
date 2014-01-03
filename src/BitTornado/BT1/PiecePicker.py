@@ -252,7 +252,7 @@ class PiecePicker:
         complete_first - should we complete pieces that we already started to take care of?
         """
         inOrderWindow = int(max(0, 0.75 - 4 * self.getPercentageOfNotSeedersVOD()) * len(haves))
-        self.logger.append("Window Size", "%d" % inOrderWindow)
+        self.logger.append("PIECEPICKER","Window Size %d" % inOrderWindow)
         return self.hybridNext(inOrderWindow, haves, wantfunc, complete_first)
     
     def dynamicHybridNext(self, haves, wantfunc, complete_first):
