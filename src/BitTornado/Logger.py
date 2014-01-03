@@ -44,8 +44,8 @@ class Logger:
         
     @staticmethod
     def initLogger(filePath, sched, writeInterval = 30):
-        singletone = Logger(filePath, sched, writeInterval)
+        Logger.singletone = Logger(filePath, sched, writeInterval)
         
     @staticmethod
     def getLogger():
-        return (singletone)
+        return (Logger.singletone)
