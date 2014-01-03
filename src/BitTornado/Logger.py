@@ -37,4 +37,5 @@ class Logger:
             file.flush()
             
     def __logWork(self):
+        self.write()
         self.sched(self.__logWork, self.writeInterval)
