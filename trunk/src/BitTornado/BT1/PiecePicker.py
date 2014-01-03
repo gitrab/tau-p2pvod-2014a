@@ -287,16 +287,21 @@ class PiecePicker:
         if ((inOrderWindow > 0) and 
             (self.getSafeInterval(haves, self.getViewingPiece(), inOrderWindow) <= inOrderWindow)):
             p = self.inOrder(haves, wantfunc)
-            self.logger.append("Used inOrder. Piece", "%d" % p)
-            return p
+            alg = "inOrder"
         elif (self.getViewingPiece() < len(haves)):
             p = self.smartRarestFirst(haves, wantfunc, complete_first)
-            self.logger.append("Used smartRarestFirst. Piece", "%d" % p)
-            return p
+            alg = "smartRarestFirst"
         else:
             p = self.rarestFirst(haves, wantfunc, complete_first)
-            self.logger.append("Used RarestFirst. Piece", "%d" % p)
-            return p
+            alg = "RarestFirst"
+        
+        if p == None:
+             self.logger.append("PIECEPICKER","Used %s. Piece NONE" % alg)
+        else:
+             self.logger.append("PIECEPICKER","Used %s. Piece %d" % (alg, p))
+        
+        return p
+        
     
     def getSafeInterval(self, haves, start, max = -1):
         if (max == -1) or (start + max > len(haves)):
