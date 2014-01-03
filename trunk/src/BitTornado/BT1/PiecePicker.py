@@ -41,7 +41,7 @@ class PiecePicker:
         #### P2PVODEX start ####
         self.streamWatcher = None
         self.connecter = None
-        self.storagewrapper = streamWatcher.storagewrapper
+        self.storagewrapper = None
         self.vod_seeds_connected = 0
         self.logger = Logger.getLogger()
         #### P2PVODEX start ####
@@ -248,7 +248,7 @@ class PiecePicker:
     def formatPiecesGot(self):
         formatted = "("
         vp = self.getViewingPiece()
-        for i in len(self.numpieces):
+        for i in range(self.numpieces):
             if vp == i:
                 p = '*'
             elif self.storagewrapper.do_I_have(i):
