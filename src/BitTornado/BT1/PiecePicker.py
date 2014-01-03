@@ -39,6 +39,7 @@ class PiecePicker:
         #### P2PVODEX start ####
         self.streamWatcher = None
         self.connecter = None
+        self.vod_seeds_connected = 0
         #### P2PVODEX start ####
         
     def _init_interests(self):
@@ -136,10 +137,13 @@ class PiecePicker:
             l2[newp] = piece
             parray[piece] = newp
 
-
-    def got_seed(self):
+     #### P2PVODEX start ####
+    def got_seed(self, isVODSeed):
         self.seeds_connected += 1
+        if isVODSeed:
+            self.vod_seeds_connected += 1
         self.cutoff = max(self.rarest_first_priority_cutoff-self.seeds_connected,0)
+     #### P2PVODEX end ####
 
     def became_seed(self):
         self.got_seed()
@@ -152,11 +156,15 @@ class PiecePicker:
         del self.crosscount[0]
         if not self.done:
             del self.crosscount2[0]
-
-    def lost_seed(self):
+    #### P2PVODEX start ####
+    def lost_seed(self, isVODSeed):
         self.seeds_connected -= 1
+        
+        if isVODSeed:
+            self.vod_seeds_connected -= 1
+        
         self.cutoff = max(self.rarest_first_priority_cutoff-self.seeds_connected,0)
-
+    #### P2PVODEX end ####
 
     def requested(self, piece):
         if piece not in self.started:
