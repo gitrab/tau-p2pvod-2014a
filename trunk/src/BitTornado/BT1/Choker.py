@@ -55,7 +55,13 @@ class Choker:
                     self.connections = self.connections[i:] + self.connections[:i]
                     break
         self._rechoke()
-
+    
+    #### P2PVODEX start ####
+    def _finishedViewingMovie(self):
+        if self.picker.getViewingPoint() >= self.picker.numpieces:
+            return True
+        return False
+    
     def _rechoke(self, isVODPreferred = False):
         preferred = []
         maxuploads = self.config['max_uploads']
@@ -84,7 +90,8 @@ class Choker:
                     if r < 1000 or d.is_snubbed():
                         continue
                 #### P2PVODEX start ####
-                if isVODPreferred:
+                if isVODPreferred or self._finishedViewingMovie():
+                    Logger.getLogger().append("CHOKER","I AM A MOTHERFUCIN' SEEDER BITCHES!!!")
                     conncetionIndex = 2
                     preferred.append((int(not u.connection.isVODPeer()), -r ,c))
                 else:

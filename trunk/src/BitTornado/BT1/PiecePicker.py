@@ -247,7 +247,7 @@ class PiecePicker:
     
     def formatPiecesGot(self):
         formatted = "("
-        vp = self.getViewingPiece()
+        vp = self.getViewingPoint()
         for i in range(self.numpieces):
             if vp == i:
                 p = '*'
@@ -302,10 +302,10 @@ class PiecePicker:
             after goes to pick by rarestFirst.
         """
         if ((inOrderWindow > 0) and 
-            (self.getSafeInterval(haves, self.getViewingPiece(), inOrderWindow) <= inOrderWindow)):
+            (self.getSafeInterval(haves, self.getIntervalStart(), inOrderWindow) <= inOrderWindow)):
             p = self.inOrder(haves, wantfunc)
             alg = "inOrder"
-        elif (self.getViewingPiece() < len(haves)):
+        elif (self.getIntervalStart() < len(haves)):
             p = self.smartRarestFirst(haves, wantfunc, complete_first)
             alg = "smartRarestFirst"
         else:
@@ -331,7 +331,15 @@ class PiecePicker:
 
         return (i - start)
     
-    def getViewingPiece(self):
+    def getViewingPoint(self):
+         t = int(time.time() - self.streamWatcher.startTime)
+         return int(((t - self.streamWatcher.delay) * self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
+    
+    def getIntervalStart(self):
+        """
+        Return the piece index of the start of the interval of wanted pieces.
+        i.e Viewing Point + Prefetch Time
+        """
         t = int(time.time() - self.streamWatcher.startTime)
         if t > self.streamWatcher.delay:
             intervalStart  =  int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * \
@@ -346,7 +354,7 @@ class PiecePicker:
         An In Order implementation which respects the playing point and prefetch time and
         only ask for pieces after that
         """
-        intervalStart = self.getViewingPiece()
+        intervalStart = self.getIntervalStart()
         for i in range(intervalStart, self.numpieces):
             if haves[i] and wantfunc(i):
                 return i
@@ -365,7 +373,7 @@ class PiecePicker:
         
     def smartRarestFirst(self, haves, wantfunc, complete_first = False):
         newWantFunc = lambda i: \
-            ((i >= self.getViewingPiece()) and wantfunc(i))
+            ((i >= self.getIntervalStart()) and wantfunc(i))
         return (self.rarestFirst(haves, newWantFunc, complete_first))
     
     def rarestFirst(self, haves, wantfunc, complete_first = False):
