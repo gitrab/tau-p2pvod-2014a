@@ -15,6 +15,7 @@ import csv
 import os
 import traceback
 import math
+from BitTornado.Logger import Logger
 
 class StreamWatcher:
     def __init__(self, _sched ,
@@ -116,6 +117,7 @@ class StreamWatcher:
         try:
             if self.stats2csv():
                 stdout.flush()
+                Logger.getLogger().append("STREAMWATCHER", "Exit")
                 Logger.getLogger().flush()
                 os._exit(3)
                 return
