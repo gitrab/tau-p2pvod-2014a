@@ -16,26 +16,33 @@ class Logger:
         self.filePath = filePath
         self.sched = sched
         self.writeInterval = writeInterval
-        self.logQueue = deque()
+        self.typesLogs = {}
         self._logWork()
         self.append("LOGGER", "Initilized with interval %d" % (self.writeInterval))
         
     def append(self, type, msg):
-        self.logQueue.append("[%s] %s: %s" % (time.strftime("%H:%M:%S"), type , msg))
+        if not self.typesLogs.has_key(type):
+            self.typesLogs[type] = deque()
+        
+        self.typesLogs[type].append("[%s] %s: %s" % (time.strftime("%H:%M:%S"), type , msg))
     
     def flush(self):
-        self.write(len(self.logQueue))
+        self.write(-1)
     
-    def write(self, count = 5):
-        if (len(self.logQueue) == 0):
-            return
+    def _writeFromQueue(self, file, queue, count):
+        if count == -1:
+            count = len(queue)
         
+        writen = 0
+        while (writen < count and len(queue) > 0):
+            logMsg = queue.popleft()
+            file.write(logMsg + "\n")
+            writen += 1
+    
+    def write(self, countPerType = 5):
         with open(self.filePath, 'a') as file:
-            writen = 0
-            while (writen < count and len(self.logQueue) > 0):
-                logMsg = self.logQueue.popleft()
-                file.write(logMsg + "\n")
-                writen += 1
+            for type in self.typesLogs.iterkeys():
+                self._writeFromQueue(file, self.typesLogs[type], countPerType)
                 
             file.flush()
             
