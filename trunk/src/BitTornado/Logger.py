@@ -18,6 +18,7 @@ class Logger:
         self.writeInterval = writeInterval
         self.logQueue = deque()
         self._logWork()
+        self.append("LOGGER", "Initilized with interval %d" % (self.writeInterval))
         
     def append(self, type, msg):
         self.logQueue.append("[%s] %s: %s" % (time.strftime("%H:%M:%S"), type , msg))
