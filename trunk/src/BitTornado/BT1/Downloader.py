@@ -78,7 +78,7 @@ class SingleDownload:
     def disconnected(self):
         self.downloader.lost_peer(self)
         if self.have.complete():
-            self.downloader.picker.lost_seed()
+            self.downloader.picker.lost_seed(self.connection.isVODPeer())
         else:
             for i in xrange(len(self.have)):
                 if self.have[i]:
@@ -304,7 +304,8 @@ class SingleDownload:
             return False
         self.have = have
         if have.complete():
-            self.downloader.picker.got_seed()
+        
+            self.downloader.picker.got_seed(self.connection.isVODPeer())
         else:
             for i in xrange(len(have)):
                 if have[i]:
