@@ -34,6 +34,7 @@ from clock import clock
 from __init__ import createPeerID
 ###### GROUP VOD ######
 from StreamWatcher import StreamWatcher
+from Logger import Logger
 #######################
 
 try:
@@ -682,6 +683,7 @@ class BT1Download:
         #### P2PVODEX start ####
         self.picker.streamWatcher = self.streamwatcher
         self.picker.connecter = self.connecter
+        Logger.initLogger("%s%s.log" % (self.config['out_dir'],self.config['order']), self.rawserver.add_task)
         #### P2PVODEX end  ####
                                            
         self.rawserver.add_task(self.streamwatcher.verify_vod_rate,int(self.config['delay']))
