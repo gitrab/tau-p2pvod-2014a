@@ -248,13 +248,8 @@ class PiecePicker:
         wantfunc - a function that return if we want that particular piece
         complete_first - should we complete pieces that we already started to take care of?
         """
-        inOrderWindow = int(max(0, 0.25 - 0.5 * self.getPercentageOfNotSeedersVOD()) * len(haves))
-        p = self.hybridNext(inOrderWindow, haves, wantfunc, complete_first)
-        
-        if p == None:
-            p = self.rarestFirst(haves, wantfunc, complete_first)
-            
-        return p
+        inOrderWindow = int(max(0, 0.75 - 4 * self.getPercentageOfNotSeedersVOD()) * len(haves))
+        return self.hybridNext(inOrderWindow, haves, wantfunc, complete_first)
     
     def dynamicHybridNext(self, haves, wantfunc, complete_first):
         if (not hasattr(self, 'inOrderWindow')):
@@ -285,12 +280,13 @@ class PiecePicker:
             The method pick pieces by inOrder within a specific pre-defined window and
             after goes to pick by rarestFirst.
         """
-        safeInterval = self.getSafeInterval(haves, self.getViewingPiece(), inOrderWindow)
-        
-        if (safeInterval <= inOrderWindow):
+        if ((inOrderWindow > 0) and 
+            (self.getSafeInterval(haves, self.getViewingPiece(), inOrderWindow) <= inOrderWindow)):
             return (self.inOrder(haves, wantfunc))
-        else:
+        elif (self.getViewingPiece() < len(haves)):
             return (self.smartRarestFirst(haves, wantfunc, complete_first))
+        else:
+            return (self.rarestFirst(haves, wantfunc, complete_first))
     
     def getSafeInterval(self, haves, start, max = -1):
         if (max == -1) or (start + max > len(haves)):
