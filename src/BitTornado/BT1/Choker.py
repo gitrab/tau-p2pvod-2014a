@@ -95,7 +95,8 @@ class Choker:
             preferred.sort()
             del preferred[maxuploads-1:]
             preferred = [x[conncetionIndex] for x in preferred]
-            Logger.getLogger().append("CHOKER","Top of preferred list is - %s" % preferred[0].get_id())
+            if len(preferred) > 0:
+                Logger.getLogger().append("CHOKER","Top of preferred list is - %s" % preferred[0].get_id())
         count = len(preferred)
         hit = False
         to_unchoke = []
