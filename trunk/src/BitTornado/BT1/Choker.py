@@ -55,7 +55,7 @@ class Choker:
                     break
         self._rechoke()
 
-    def _rechoke(self):
+    def _rechoke(self, preferVODPeers = False):
         preferred = []
         maxuploads = self.config['max_uploads']
         if self.paused:
@@ -83,13 +83,18 @@ class Choker:
                     if r < 1000 or d.is_snubbed():
                         continue
                 #### P2PVODEX start ####
-                preferred.append((int(not u.connection.isVODPeer()), -r ,c))
+                if preferVODPeers:
+                    preferred.append((int(not u.connection.isVODPeer()), -r ,c))
+                    indexOfConnections = 2
+                else:
+                    indexOfConnections = 1
+                    preferred.append((-r ,c))
                 
                 
             self.last_preferred = len(preferred)
             preferred.sort()
             del preferred[maxuploads-1:]
-            preferred = [x[2] for x in preferred]
+            preferred = [x[indexOfConnections] for x in preferred]
             #### P2PVODEX end ####
         count = len(preferred)
         hit = False
