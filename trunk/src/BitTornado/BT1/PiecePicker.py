@@ -225,8 +225,22 @@ class PiecePicker:
         """
         Returns the percentage of VOD peers in the current connections list
         """
-        return  self.getNumOfVODPeers() / float(len(self.connecter.connections.values()))
+        consNum = len(self.connecter.connections.values())
+        if consNum == 0:
+            return 0        
         
+        return  self.getNumOfVODPeers() / float(consNum)
+    
+    def getPercentageOfNotSeedersVOD(self):
+        """
+        Returns the percentage of VOD peers in the current connections list that are not seeders
+        """
+        consNum = len(self.connecter.connections.values())
+        if consNum == 0:
+            return 0        
+        
+        return  (self.getNumOfVODPeers() - self.vod_seeds_connected) / float(consNum)
+    
     def next(self, haves, wantfunc, complete_first = False):
         """
         return the index of the next piece to ask for
@@ -234,7 +248,7 @@ class PiecePicker:
         wantfunc - a function that return if we want that particular piece
         complete_first - should we complete pieces that we already started to take care of?
         """
-        inOrderWindow = int(max(0, 0.25 - 0.5 * self.getPercentageOfVODPeers()) * len(haves))
+        inOrderWindow = int(max(0, 0.25 - 0.5 * self.getPercentageOfNotSeedersVOD()) * len(haves))
         p = self.hybridNext(inOrderWindow, haves, wantfunc, complete_first)
         
         if p == None:
@@ -244,7 +258,7 @@ class PiecePicker:
     
     def dynamicHybridNext(self, haves, wantfunc, complete_first):
         if (not hasattr(self, 'inOrderWindow')):
-            self.inOrderWindow = int(max(0, 0.25 - 0.5 * self.getPercentageOfVODPeers()) * len(haves))
+            self.inOrderWindow = int(max(0, 0.25 - 0.5 * self.getPercentageOfNotSeedersVOD()) * len(haves))
             self.prevDfs = self.streamWatcher.total_dfs*1000 / self.streamWatcher.total
             self.lastWindowUpdate = time.time()
         
