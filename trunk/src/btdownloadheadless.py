@@ -125,6 +125,7 @@ class HeadlessDisplayer:
             self.timeTot = hours(self.last_update_time - self.first_update_time)
             print '\n\n\n\n'
             self.numOfVODPeers = statistics.numOfVODPeers
+            self.numOfVODSeeds = statistics.numOfVODSeeds
         for err in self.errors:
             print 'ERROR:\n' + err + '\n'
         if self.verbose:
@@ -141,6 +142,7 @@ class HeadlessDisplayer:
             print 'peer status:      ', self.peerStatus,'\r'
             #### P2PVODEX start ####
             print 'VOD Peers:        ', self.numOfVODPeers,'\r'
+            print 'VOD Seeds:        ', self.numOfVODSeeds,'\r'
             #### P2PVODEX end ####
             stdout.flush()
         dpflag.set()        
