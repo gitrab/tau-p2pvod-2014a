@@ -23,7 +23,9 @@ class Choker:
         self.super_seed = False
         self.paused = False
         schedule(self._round_robin, 5)
+        #### P2PVODEX start ####
         self.passedEndOfMovieFlag = False
+        #### P2PVODEX end ####
 
     def set_round_robin_period(self, x):
         self.round_robin_period = x
