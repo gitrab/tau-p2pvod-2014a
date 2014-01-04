@@ -278,9 +278,23 @@ class PiecePicker:
         """
         self.updateCurrentRate(rate)
         inOrderWindow = int(max(0, 0.75 - 4 * self.getPercentageOfNotSeedersVOD()) * len(haves))
-        self.logger.append("PIECEPICKER","Window Size %d" % inOrderWindow)
+        #self.logger.append("PIECEPICKER","Window Size %d" % inOrderWindow)
         self.logger.append("PIECEPICKER","Pieces Status - %s" % self.formatPiecesGot())
-        return self.hybridNext(inOrderWindow, haves, wantfunc, complete_first)
+        #return self.hybridNext(inOrderWindow, haves, wantfunc, complete_first)
+        intervalStart = self.getIntervalStart()
+        window = range(intervalStart, intervalStart + 40)
+        
+        self.logger.append("PIECEPICKER","Window start is %d" % (intervalStart))
+        
+        p = self.smartRarestFirst(haves, wantfunc, complete_first, \
+                                      window = window)
+        if p == None:
+            p = self.smartRarestFirst(haves, wantfunc, complete_first)
+        
+        if p != None:
+            self.logger.append("PIECEPICKER","piece chosen is %d" % (p))
+        
+        return p
     
     def dynamicHybridNext(self, haves, wantfunc, complete_first):
         if (not hasattr(self, 'inOrderWindow')):
@@ -391,12 +405,12 @@ class PiecePicker:
         
         return None
         
-    def smartRarestFirst(self, haves, wantfunc, complete_first = False):
+    def smartRarestFirst(self, haves, wantfunc, complete_first = False, window = None):
         newWantFunc = lambda i: \
             ((i >= self.getIntervalStart()) and wantfunc(i))
-        return (self.rarestFirst(haves, newWantFunc, complete_first))
+        return (self.rarestFirst(haves, newWantFunc, complete_first, window))
     
-    def rarestFirst(self, haves, wantfunc, complete_first = False):
+    def rarestFirst(self, haves, wantfunc, complete_first = False, window = None):
         cutoff = self.numgot < self.rarest_first_cutoff
         complete_first = (complete_first or cutoff) and not haves.complete()
         best = None
@@ -423,6 +437,10 @@ class PiecePicker:
             for i in xrange(lo,hi):
                 for j in self.interests[i]:
                     if haves[j] and wantfunc(j):
+                        if window and j in window:
+                            return j
+                        else:
+                            continue
                         return j
         if best is not None:
             return best
