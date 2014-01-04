@@ -2,6 +2,8 @@
 # see LICENSE.txt for license information
 
 import time
+import sys
+import math
 from random import randrange, shuffle
 from BitTornado.clock import clock
 from BitTornado.StreamWatcher import StreamWatcher 
@@ -44,6 +46,7 @@ class PiecePicker:
         self.storagewrapper = None
         self.vod_seeds_connected = 0
         self.logger = Logger.getLogger()
+        self.rate = sys.maxint
         #### P2PVODEX start ####
         
     def _init_interests(self):
@@ -260,13 +263,20 @@ class PiecePicker:
             formatted += p
         return formatted + ')'
     
-    def next(self, haves, wantfunc, complete_first = False):
+    def updateCurrentRate(self, rate):
+        if rate != 0:
+            self.rate = rate
+        else:
+            rate = 0.0001
+            
+    def next(self, haves, wantfunc, complete_first = False, rate = sys.maxint):
         """
         return the index of the next piece to ask for
         haves - list of pieces we know peers have
         wantfunc - a function that return if we want that particular piece
         complete_first - should we complete pieces that we already started to take care of?
         """
+        self.updateCurrentRate(rate)
         inOrderWindow = int(max(0, 0.75 - 4 * self.getPercentageOfNotSeedersVOD()) * len(haves))
         self.logger.append("PIECEPICKER","Window Size %d" % inOrderWindow)
         self.logger.append("PIECEPICKER","Pieces Status - %s" % self.formatPiecesGot())
@@ -344,10 +354,20 @@ class PiecePicker:
         if t > self.streamWatcher.delay:
             intervalStart  =  int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * \
                                     self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
+            
+            #Safe distance to ensure the downloaded piece could actually be wathced on time
+            safeDistance = int(math.ceil(self.streamWatcher.rate / float(self.rate)))
+            if safeDistance >= self.numpieces - self.getViewingPoint():
+                self.logger.append("PIECEPICKER","Safe distance is too large! Download rate: %d" % self.rate)
+                safeDistance = 0
+                
+            self.logger.append("PIECEPICKER","Current safe distance is: %d" % safeDistance)
         else:
             intervalStart = 0
-            
-        return intervalStart
+            safeDistance = 0
+        
+        
+        return intervalStart + safeDistance 
     
     def inOrder(self, haves, wantfunc):
         """

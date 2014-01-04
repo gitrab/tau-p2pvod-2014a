@@ -198,7 +198,8 @@ class SingleDownload:
         while len(self.active_requests) < self.backlog:
             interest = self.downloader.picker.next(self.have,
                                self.downloader.storage.do_I_have_requests,
-                               self.downloader.too_many_partials())
+                               complete_first = self.downloader.too_many_partials(),
+                               rate = self.measure.get_rate())
             if interest is None:
                 break
             self.example_interest = interest
@@ -228,7 +229,8 @@ class SingleDownload:
                     continue
                 interest = self.downloader.picker.next(d.have,
                                    self.downloader.storage.do_I_have_requests,
-                                   self.downloader.too_many_partials())
+                                   complete_first = self.downloader.too_many_partials(),
+                                   rate = d.measure.get_rate())
                 if interest is None:
                     d.send_not_interested()
                 else:
