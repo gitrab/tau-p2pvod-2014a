@@ -125,6 +125,7 @@ class Choker:
                         hit = True
                 else:
                     u.choke()
+                    Logger.getLogger().append("CHOKER","Choking - %s" % u.connection.get_id())
         for u in to_unchoke:
             Logger.getLogger().append("CHOKER","Unchoking - %s" % u.connection.get_id())
             u.unchoke()
