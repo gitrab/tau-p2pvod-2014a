@@ -23,6 +23,7 @@ class Choker:
         self.super_seed = False
         self.paused = False
         schedule(self._round_robin, 5)
+        self.passedEndOfMovieFlag = False
 
     def set_round_robin_period(self, x):
         self.round_robin_period = x
@@ -61,8 +62,10 @@ class Choker:
         if self.picker.getViewingPoint() >= self.picker.numpieces:
             return True
         return False
+    #### P2PVODEX end ####
     
     def _rechoke(self, isVODPreferred = False):
+        self._finishedViewingMovie()
         preferred = []
         maxuploads = self.config['max_uploads']
         if self.paused:
@@ -90,8 +93,11 @@ class Choker:
                     if r < 1000 or d.is_snubbed():
                         continue
                 #### P2PVODEX start ####
+                if self._finishedViewingMovie() and not self.passedEndOfMovieFlag:
+                    Logger.getLogger().append("CHOKER","Movie finish point viewing point - %d , total pieces - %d" % (self.picker.getViewingPoint() , self.picker.numpieces))
+                    self.passedEndOfMovieFlag = True
+                    
                 if isVODPreferred or self._finishedViewingMovie():
-                    Logger.getLogger().append("CHOKER","I AM A MOTHERFUCIN' SEEDER BITCHES!!!")
                     conncetionIndex = 2
                     preferred.append((int(not u.connection.isVODPeer()), -r ,c))
                 else:
