@@ -4,6 +4,7 @@
 import time
 import sys
 import math
+import random
 from random import randrange, shuffle
 from BitTornado.clock import clock
 from BitTornado.StreamWatcher import StreamWatcher 
@@ -263,11 +264,50 @@ class PiecePicker:
             formatted += p
         return formatted + ')'
     
+    def formatPiecesGotWithWindows(self, window):
+        if len(window) == 0:
+            return self.formatPiecesGot()
+        formatted = "("
+        vp = self.getViewingPoint()
+        
+        t = int(time.time() - self.streamWatcher.startTime)
+        prefetrch = int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * \
+                                self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
+        
+        windowStart = window[0]
+        windowEnd = window[-1]
+        
+        for i in range(self.numpieces):
+            
+            p = ''
+            
+            if i == vp:
+                p += '['
+            if i == prefetrch:
+                p += ']'
+            if i == windowStart:
+                p += '{'
+            if i == windowEnd:
+                p += '}'
+        
+            if self.storagewrapper.do_I_have(i):
+                    p += '+'
+            elif i in self.started:
+                    p += '/'
+            else:
+                if i != 0:
+                    p += '-'
+            
+            formatted += p
+            
+        return formatted + ')'
+    
     def updateCurrentRate(self, rate):
         if rate != 0:
-            self.rate = rate
+            self.rate = rate / 1024.0
         else:
             rate = 0.0001
+        #self.logger.append("PIECEPICKER","Current rate is - %d" % rate)
             
     def next(self, haves, wantfunc, complete_first = False, rate = sys.maxint):
         """
@@ -277,30 +317,145 @@ class PiecePicker:
         complete_first - should we complete pieces that we already started to take care of?
         """
         self.updateCurrentRate(rate)
-        self.logger.append("PIECEPICKER","Pieces Status - %s" % self.formatPiecesGot())
+        #self.logger.append("PIECEPICKER","Pieces Status - %s" % self.formatPiecesGot())
         return self.windowedSmartRarestFirst(haves, wantfunc, complete_first)
+        #return self.hybridVODNext(haves, wantfunc, complete_first)
+        #return self.lastYearnext(haves, wantfunc, complete_first)
        
+    def lastYearnext(self,haves,wantfunc,complete_first = False):
+        if (time.time()-self.streamWatcher.startTime < int(self.streamWatcher.delay) ):
+            p=self.lastYearRandomRarest(haves, wantfunc)
+        else:
+            p = self.lastYearInOrder(haves, wantfunc)
+        if (p==None):
+            downloadRate = self.rate 
+            if downloadRate > int(self.rate)*1.5:
+                p=self.lastYearBetaRarest(haves, wantfunc)
+            else:
+                p=self.lastYearRandomRarest(haves, wantfunc)
+        if (p==None):
+            p=self.lastYearRandomRarest(haves, wantfunc)
+        return p
+         
+    def lastYearGetInOrderInterval(self):
+        alpha = self.getIntervalStart()
+        if (alpha>0):
+            alpha+=1
+        beta = alpha + int(0.1*self.numpieces)
+        if beta>self.numpieces-1:
+            beta  =  self.numpieces-1
+        if alpha>beta-1:
+            alpha  = beta-1
+        return [alpha,beta]
+    
+    def lastYearInOrder(self, haves, wantfunc):
+        interval = self.lastYearGetInOrderInterval()
+        for j in xrange(interval[0],interval[1]):
+                if  haves[j] and wantfunc(j):
+                    return j 
+        
+        return None
+
+    def lastYearRandomRarest(self, haves, wantfunc):
+        best = None
+        bestnum = 2 ** 30
+        for i in self.started:
+            if haves[i] and wantfunc(i):
+                if self.level_in_interests[i] < bestnum:
+                    best = i
+                    bestnum = self.level_in_interests[i]
+        if best is not None:
+            return best
+        if haves.complete():
+            r = [ (0, min(bestnum,len(self.interests))) ]
+        elif len(self.interests) > self.cutoff:
+            r = [ (self.cutoff, min(bestnum,len(self.interests))) ,(0, self.cutoff) ]
+        else:
+            r = [ (0, min(bestnum,len(self.interests))) ]
+        for lo,hi in r:
+            for i in xrange(lo,hi):
+                for j in self.interests[i]:
+                    if haves[j] and wantfunc(j):
+                        return j
+        if best is not None:
+            return best
+        return None
+    
+    def lastYearBetaRarest(self, haves, wantfunc):
+        best = None
+        bestnum = 2 ** 30
+        for i in self.started:
+            if haves[i] and wantfunc(i):
+                if self.level_in_interests[i] < bestnum:
+                    best = i
+                    bestnum = self.level_in_interests[i]
+        if best is not None:
+            return best
+        if haves.complete():
+            r = [ (0, min(bestnum,len(self.interests))) ]
+        elif len(self.interests) > self.cutoff:
+            r = [ (self.cutoff, min(bestnum,len(self.interests))) ,(0, self.cutoff) ]
+        else:
+            r = [ (0, min(bestnum,len(self.interests))) ]
+        for lo,hi in r:
+            for i in xrange(lo,hi):
+                betaList = list(self.interests[i])
+                betaList.sort()
+                if  len(betaList):
+                    p = self.lastYearBetaRandom(haves, wantfunc , betaList )
+                    if p is not None:
+                        return p 
+        if best is not None:
+            return best
+        return None
+    
+    def lastYearBetaRandom(self, haves, wantfunc , list ):   
+            beta_pieces_list = []                 
+            for j in list:
+                if haves[j] and wantfunc(j):
+                    beta_pieces_list.append(j)
+            
+            if len(beta_pieces_list)==0:
+                return None
+            
+            bvRand = random.betavariate(0.4,4.0)            
+            if bvRand == 1:
+                i =  len(beta_pieces_list) - 1
+            else:
+                i =  int(math.floor( bvRand * len(beta_pieces_list)))         
+            return beta_pieces_list[i]
+        
     
     def windowedSmartRarestFirst(self, haves, wantfunc, complete_first):
         intervalStart = self.getIntervalStart()
-        window = range(intervalStart, intervalStart + 40)
+        intervalEnd = intervalStart + int(self.numpieces * 0.33)
         
-        self.logger.append("PIECEPICKER","Window start is %d" % (intervalStart))
+        if intervalEnd >= self.numpieces:
+            intervalEnd = self.numpieces
+            
+        window = range(intervalStart, intervalEnd)
+        
+        self.logger.append("PIECEPICKER", self.formatPiecesGotWithWindows(window))
+        
+        #if len(window) > 0:
+        #    self.logger.append("PIECEPICKER","Window is [%d, %d]" % (window[0], window[-1]))
+        if len(window) == 0:
+            window = None
         
         p = self.smartRarestFirst(haves, wantfunc, complete_first, \
                                       window = window)
         if p == None:
             p = self.smartRarestFirst(haves, wantfunc, complete_first)
         
-        if p != None:
-            self.logger.append("PIECEPICKER","piece chosen is %d" % (p))
+        #if p != None:
+        #    self.logger.append("PIECEPICKER","piece chosen is %d" % (p))
         
         return p
         
     
     def hybridVODNext(self, haves, wantfunc, complete_first):
          inOrderWindow = int(max(0, 0.75 - 4 * self.getPercentageOfNotSeedersVOD()) * len(haves))
-         self.logger.append("PIECEPICKER","Window Size %d" % inOrderWindow)
+        # self.logger.append("PIECEPICKER","Window Size %d" % inOrderWindow)
          return self.hybridNext(inOrderWindow, haves, wantfunc, complete_first)
     
     def dynamicHybridNext(self, haves, wantfunc, complete_first):
@@ -328,14 +483,14 @@ class PiecePicker:
     
     def hybridNext(self, inOrderWindow, haves, wantfunc, complete_first = False):
         """
-        An hybrid method to pick pieces including inOrder and rarestFirst.
-            The method pick pieces by inOrder within a specific pre-defined window and
+        An hybrid method to pick pieces including smartInOrder and rarestFirst.
+            The method pick pieces by smartInOrder within a specific pre-defined window and
             after goes to pick by rarestFirst.
         """
         if ((inOrderWindow > 0) and 
             (self.getSafeInterval(haves, self.getIntervalStart(), inOrderWindow) <= inOrderWindow)):
-            p = self.inOrder(haves, wantfunc)
-            alg = "inOrder"
+            p = self.smartInOrder(haves, wantfunc)
+            alg = "smartInOrder"
         elif (self.getIntervalStart() < len(haves)):
             p = self.smartRarestFirst(haves, wantfunc, complete_first)
             alg = "smartRarestFirst"
@@ -376,21 +531,20 @@ class PiecePicker:
             intervalStart  =  int(((t - self.streamWatcher.delay  + self.streamWatcher.prefetch ) * \
                                     self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
             
-            #Safe distance to ensure the downloaded piece could actually be wathced on time
-            safeDistance = int(math.ceil(self.streamWatcher.rate / float(self.rate)))
-            if safeDistance >= self.numpieces - self.getViewingPoint():
-                self.logger.append("PIECEPICKER","Safe distance is too large! Download rate: %d" % self.rate)
-                safeDistance = 0
+            #Safe distance to ensure the downloaded piece could actually be watched on time
+            safeDistance = int( math.ceil( math.sqrt (self.streamWatcher.rate / float(self.rate) ) ) ) 
                 
-            self.logger.append("PIECEPICKER","Current safe distance is: %d" % safeDistance)
+            #self.logger.append("PIECEPICKER","Current safe distance is: %d" % safeDistance)
         else:
             intervalStart = 0
             safeDistance = 0
         
+        if intervalStart + safeDistance < self.numpieces:
+            return intervalStart + safeDistance 
         
-        return intervalStart + safeDistance 
+        return intervalStart
     
-    def inOrder(self, haves, wantfunc):
+    def smartInOrder(self, haves, wantfunc):
         """
         An In Order implementation which respects the playing point and prefetch time and
         only ask for pieces after that
