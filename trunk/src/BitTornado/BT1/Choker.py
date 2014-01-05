@@ -110,8 +110,8 @@ class Choker:
             preferred.sort()
             del preferred[maxuploads-1:]
             preferred = [x[conncetionIndex] for x in preferred]
-            if len(preferred) > 0:
-                Logger.getLogger().append("CHOKER","Top of preferred list is - %s" % preferred[0].get_id())
+            #if len(preferred) > 0:
+                #Logger.getLogger().append("CHOKER","Top of preferred list is - %s" % preferred[0].get_id())
         count = len(preferred)
         hit = False
         to_unchoke = []
@@ -127,9 +127,9 @@ class Choker:
                         hit = True
                 else:
                     u.choke()
-                    Logger.getLogger().append("CHOKER","Choking - %s" % u.connection.get_id())
+                    #Logger.getLogger().append("CHOKER","Choking - %s" % u.connection.get_id())
         for u in to_unchoke:
-            Logger.getLogger().append("CHOKER","Unchoking - %s" % u.connection.get_id())
+            #Logger.getLogger().append("CHOKER","Unchoking - %s" % u.connection.get_id())
             u.unchoke()
 
     def connection_made(self, connection, p = None):
