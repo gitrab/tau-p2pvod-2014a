@@ -177,7 +177,7 @@ class StreamWatcher:
         order = int(self.config['order'])
         end_time = int(self.toKbytes(self.total) / self.rate)
         
-        print "CSV: order ",order,"has",len(self.stats)
+        Logger.getLogger().append("CSV", "has %d samples" % len(self.stats))
         
         if (len(self.stats) < (end_time / self.prefetch) * 0.5):
             return 0
@@ -188,11 +188,12 @@ class StreamWatcher:
             
             #pre-gap padding
             for i in range(0, (order - 1) * self.gap):
-                #print "DEBUG: order ",order,"pre-gap",i,"dfs",0,"p2p",0
                 writer.writerow([self.config['alg'],0,0])
             
             #my data
             t = self.stats[0][0]
+            Logger.getLogger().append("CSV", "first sample time = %d" % t)
+            
             statsIndex = 0
             
             while (t <= end_time) :
@@ -204,20 +205,18 @@ class StreamWatcher:
                 dfs = int(math.ceil(lastStats[1] + factor * (self.stats[statsIndex][1] - lastStats[1])))
                 p2p = int(math.ceil(lastStats[2] + factor * (self.stats[statsIndex][2] - lastStats[2])))
                 
-                #print "DEBUG: order ",order,"t",t,"index",statsIndex,"factor",factor,"dfs",dfs,"p2p",p2p
-                
+                Logger.getLogger().append("CSV", "t=%d factor=%.2f dfs=%d p2p=%d" % (t, factor, dfs, p2p))
                 writer.writerow([self.config['alg'],int(dfs),int(p2p)])
                 
                 t = t + self.prefetch
             
             lastStats = self.stats[len(self.stats) - 1]
             
-            #print "DEBUG: order ",order,"t",t,"index",statsIndex,"dfs",lastStats[1],"p2p",lastStats[2]
+            Logger.getLogger().append("CSV", "t=%d dfs=%d p2p=%d" % (t, lastStats[1], lastStats[2]))
             writer.writerow([self.config['alg'],lastStats[1],lastStats[2]])
             
             #post-gap padding
             for i in range(0, (group_size - order) * self.gap):
-                #print "DEBUG: order ",order,"post-gap",i,"dfs",lastStats[1],"p2p",lastStats[2]
                 writer.writerow([self.config['alg'],lastStats[1],lastStats[2]])
             
             file.flush()
