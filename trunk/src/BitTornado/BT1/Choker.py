@@ -61,13 +61,10 @@ class Choker:
     
     #### P2PVODEX start ####
     def _finishedViewingMovie(self):
-        if self.picker.getViewingPoint() >= self.picker.numpieces:
-            return True
-        return False
+        return self.picker.getViewingPoint() >= self.picker.numpieces
     #### P2PVODEX end ####
     
     def _rechoke(self, isVODPreferred = False):
-        self._finishedViewingMovie()
         preferred = []
         maxuploads = self.config['max_uploads']
         if self.paused:
@@ -79,11 +76,11 @@ class Choker:
                 
                 u = c.get_upload()
 
-#HILLEL:
+                #HILLEL:
                 d = c.get_download()
                 if (d.get_rate() != u.get_rate()) and (u.get_rate()>(d.get_rate()/4)):
                     u.choke()
-#-------
+                #-------
                 if not u.is_interested():
                     continue
                 if self.done():

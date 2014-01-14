@@ -316,8 +316,14 @@ class PiecePicker:
         wantfunc - a function that return if we want that particular piece
         complete_first - should we complete pieces that we already started to take care of?
         """
-        self.updateCurrentRate(rate)
-        
+        self.updateCurrentRate(rate)           
+               
+        t = int(time.time() - self.streamWatcher.startTime)
+        if t <= self.streamWatcher.delay:
+            interval  =  int( ( ( self.streamWatcher.delay ) * self.streamWatcher.rate) / \
+                                   self.streamWatcher.toKbytes(self.streamWatcher.piece_size) )
+            return self.smartRarestFirst(haves, wantfunc, complete_first, range(0, interval))
+       
         return self.dynamicWindowedRarestFirst(haves, wantfunc, complete_first)
         #return self.windowedSmartRarestFirst(haves, wantfunc, complete_first)
         #return self.hybridVODNext(haves, wantfunc, complete_first)
@@ -428,10 +434,10 @@ class PiecePicker:
         
     def dynamicWindowedRarestFirst(self, haves, wantfunc, complete_first):
         intervalStart = self.getIntervalStart()
-        intervalStart += self.getCompletedSequence(haves, intervalStart)
+        #intervalStart += self.getCompletedSequence(intervalStart)
         
         dfs = max(float(self.streamWatcher.total_dfs) / self.streamWatcher.total, 0.01)
-        interval = (self.getPercentageOfNotSeedersVOD() ** 3) / dfs
+        interval = (self.getPercentageOfNotSeedersVOD() ** 2) / dfs
         interval = min(max(interval, 0.00001), 1)
         interval = int(math.ceil(interval * self.numpieces))
         
@@ -444,8 +450,19 @@ class PiecePicker:
         
         p = self.smartRarestFirst(haves, wantfunc, complete_first, window)
         
+        while(p == None and window[-1] < self.numpieces):
+            start = window[-1] + 1
+            end = window[-1] + 1 + interval
+            if(end > self.numpieces):
+                end = self.numpieces
+            window = range(star, end)
+            p = self.smartRarestFirst(haves, wantfunc, complete_first, window)
+
         if p == None:
             p = self.smartRarestFirst(haves, wantfunc, complete_first)
+        
+        if p == None:
+            p = self.rarestFirst(haves, wantfunc, complete_first)
         
         return p
         
@@ -510,7 +527,7 @@ class PiecePicker:
             after goes to pick by rarestFirst.
         """
         if ((inOrderWindow > 0) and 
-            (self.getCompletedSequence(haves, self.getIntervalStart(), inOrderWindow) <= inOrderWindow)):
+            (self.getCompletedSequence(self.getIntervalStart(), inOrderWindow) <= inOrderWindow)):
             p = self.smartInOrder(haves, wantfunc)
             alg = "smartInOrder"
         elif (self.getIntervalStart() < len(haves)):
@@ -527,13 +544,15 @@ class PiecePicker:
         
         return p
     
-    def getCompletedSequence(self, haves, start, max = -1):
-        if (max == -1) or (start + max > len(haves)):
-            max = len(haves) - start
+    def getCompletedSequence(self, start = 0, max = -1):
+        if (max == -1) or (start + max > self.numpieces):
+            max = self.numpieces - start
         
         seq = 0
         
-        while (seq < max) and haves[start + seq]:
+        
+        
+        while (seq < max) and self.storagewrapper.do_I_have(start + seq):
             seq += 1
 
         return seq
