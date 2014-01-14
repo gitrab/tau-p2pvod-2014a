@@ -317,8 +317,9 @@ class PiecePicker:
         complete_first - should we complete pieces that we already started to take care of?
         """
         self.updateCurrentRate(rate)
-        #self.logger.append("PIECEPICKER","Pieces Status - %s" % self.formatPiecesGot())
-        return self.windowedSmartRarestFirst(haves, wantfunc, complete_first)
+        
+        return self.dynamicWindowedRarestFirst(haves, wantfunc, complete_first)
+        #return self.windowedSmartRarestFirst(haves, wantfunc, complete_first)
         #return self.hybridVODNext(haves, wantfunc, complete_first)
         #return self.lastYearnext(haves, wantfunc, complete_first)
        
