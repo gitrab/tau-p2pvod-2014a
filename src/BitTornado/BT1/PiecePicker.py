@@ -430,10 +430,10 @@ class PiecePicker:
         intervalStart = self.getIntervalStart()
         intervalStart += self.getCompletedSequence(haves, intervalStart)
         
-        dfs = math.max(float(self.streamWatcher.total_dfs) / self.streamWatcher.total, 0.01)
+        dfs = max(float(self.streamWatcher.total_dfs) / self.streamWatcher.total, 0.01)
         interval = (self.getPercentageOfNotSeedersVOD() ** 3) / dfs
-        interval = math.min(math.max(interval, 0.00001), 1)
-        interval = math.ceil(interval * self.numpieces)
+        interval = min(max(interval, 0.00001), 1)
+        interval = int(math.ceil(interval * self.numpieces))
         
         window = range(intervalStart, intervalStart + interval)
         
