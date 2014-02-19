@@ -265,7 +265,7 @@ class PiecePicker:
         return formatted + ')'
     
     def formatPiecesGotWithWindows(self, window):
-        if len(window) == 0:
+        if window == None or len(window) == 0:
             return self.formatPiecesGot()
         formatted = "("
         vp = self.getViewingPoint()
@@ -283,20 +283,20 @@ class PiecePicker:
             
             if i == vp:
                 p += '['
-            if i == prefetrch:
-                p += ']'
             if i == windowStart:
                 p += '{'
-            if i == windowEnd:
-                p += '}'
         
             if self.storagewrapper.do_I_have(i):
                     p += '+'
             elif i in self.started:
                     p += '/'
             else:
-                if i != 0:
                     p += '-'
+
+            if i == windowEnd:
+                p += '}'
+            if i == prefetrch:
+                p += ']'    
             
             formatted += p
             
@@ -318,11 +318,11 @@ class PiecePicker:
         """
         self.updateCurrentRate(rate)           
                
-        t = int(time.time() - self.streamWatcher.startTime)
-        if t <= self.streamWatcher.delay:
-            interval  =  int( ( ( self.streamWatcher.delay ) * self.streamWatcher.rate) / \
-                                   self.streamWatcher.toKbytes(self.streamWatcher.piece_size) )
-            return self.smartRarestFirst(haves, wantfunc, complete_first, range(0, interval))
+#         t = int(time.time() - self.streamWatcher.startTime)
+#         if t <= self.streamWatcher.delay:
+#             interval  =  int( ( ( self.streamWatcher.delay ) * self.streamWatcher.rate) / \
+#                                    self.streamWatcher.toKbytes(self.streamWatcher.piece_size) )
+#             return self.smartRarestFirst(haves, wantfunc, complete_first, range(0, interval))
        
         return self.dynamicWindowedRarestFirst(haves, wantfunc, complete_first)
         #return self.windowedSmartRarestFirst(haves, wantfunc, complete_first)
@@ -433,31 +433,25 @@ class PiecePicker:
             return beta_pieces_list[i]
         
     def dynamicWindowedRarestFirst(self, haves, wantfunc, complete_first):
-        intervalStart = self.getIntervalStart()
-        #intervalStart += self.getCompletedSequence(intervalStart)
         
         dfs = max(float(self.streamWatcher.total_dfs) / self.streamWatcher.total, 0.01)
-        interval = (self.getPercentageOfNotSeedersVOD() ** 2) / dfs
+        vods = self.getPercentageOfNotSeedersVOD()
+        interval = (vods ** 1.6) / (0 * (dfs - 1) + 1)
         interval = min(max(interval, 0.00001), 1)
         interval = int(math.ceil(interval * self.numpieces))
         
-        window = range(intervalStart, intervalStart + interval)
+        self.logger.append("PIECEPICKER", "window interval %.2f,%.2f => %d" % (dfs, vods, interval))
         
-        self.logger.append("PIECEPICKER", self.formatPiecesGotWithWindows(window))
+        start = self.getIntervalStart()
+        end = min(start + interval, self.numpieces)
+               
+        p = None
         
-        if len(window) == 0:
-            window = None
-        
-        p = self.smartRarestFirst(haves, wantfunc, complete_first, window)
-        
-        while(p == None and window[-1] < self.numpieces):
-            start = window[-1] + 1
-            end = window[-1] + 1 + interval
-            if(end > self.numpieces):
-                end = self.numpieces
-            window = range(star, end)
-            p = self.smartRarestFirst(haves, wantfunc, complete_first, window)
-
+        while(p == None and start < self.numpieces):
+            p = self.smartRarestFirst(haves, wantfunc, complete_first, range(start, end))
+            start = end
+            end = min(start + interval, self.numpieces)
+            
         if p == None:
             p = self.smartRarestFirst(haves, wantfunc, complete_first)
         
@@ -607,10 +601,15 @@ class PiecePicker:
         return None
         
     def smartRarestFirst(self, haves, wantfunc, complete_first = False, window = None):
+        
         if window == None:
+            self.logger.append("PIECEPICKER", self.formatPiecesGot())
+            
             newWantFunc = lambda i: \
                 ((i >= self.getIntervalStart()) and wantfunc(i))
         else:
+            self.logger.append("PIECEPICKER", "%s [%d,%d]" % (self.formatPiecesGotWithWindows(window), window[0], window[-1]))
+            
             newWantFunc = lambda i: \
                 ((i in window) and wantfunc(i))
         return (self.rarestFirst(haves, newWantFunc, complete_first))
