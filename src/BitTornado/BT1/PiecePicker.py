@@ -436,21 +436,19 @@ class PiecePicker:
         
         dfs = max(float(self.streamWatcher.total_dfs) / self.streamWatcher.total, 0.01)
         vods = self.getPercentageOfNotSeedersVOD()
-        interval = (vods ** 1.6) / (0 * (dfs - 1) + 1)
+        #interval = (vods ** 1.6) / (0 * (dfs - 1) + 1)
+        interval = (0.82 * vods - 0.08) * ((1 - dfs) ** 0.1) 
         interval = min(max(interval, 0.00001), 1)
         interval = int(math.ceil(interval * self.numpieces))
         
         self.logger.append("PIECEPICKER", "window interval %.2f,%.2f => %d" % (dfs, vods, interval))
         
         start = self.getIntervalStart()
-        end = min(start + interval, self.numpieces)
-               
-        p = None
+        p = self.intervalRarestFirst(haves, wantfunc, complete_first, start, interval)
         
-        while(p == None and start < self.numpieces):
-            p = self.smartRarestFirst(haves, wantfunc, complete_first, range(start, end))
-            start = end
-            end = min(start + interval, self.numpieces)
+        if p != None:
+            window = range(start, start + interval)
+            self.logger.append("PIECEPICKER", "%s [%d,%d]" % (self.formatPiecesGotWithWindows(window), start, start + interval))
             
         if p == None:
             p = self.smartRarestFirst(haves, wantfunc, complete_first)
@@ -459,6 +457,52 @@ class PiecePicker:
             p = self.rarestFirst(haves, wantfunc, complete_first)
         
         return p
+        
+    def intervalRarestFirst(self, haves, wantfunc, complete_first, start, interval):
+        calcInterval = lambda i: \
+                math.floor((((i - start) / interval) + 1))
+        
+        cutoff = self.numgot < self.rarest_first_cutoff
+        complete_first = (complete_first or cutoff) and not haves.complete()
+        best = None
+        bestInterval = 2 ** 30
+        bestnum = 2 ** 30
+        #self.started represents all of the pieces that have been called already
+        for i in self.started:
+            if haves[i] and wantfunc(i) and i >= start:
+                currInterval = calcInterval(i)
+                if currInterval < bestInterval or \
+                    (currInterval == bestInterval and self.level_in_interests[i] < bestnum):
+                    #the best one to get next
+                    best = i
+                    bestInterval = calcInterval(i)
+                    #the priority of this "best" piece
+                    bestnum = self.level_in_interests[i]
+        if best is not None:
+            if complete_first or (cutoff and len(self.interests) > self.cutoff):
+                return best
+        if haves.complete():
+            r = [ (0, min(bestnum,len(self.interests))) ]
+        elif cutoff and len(self.interests) > self.cutoff:
+            r = [ (self.cutoff, min(bestnum,len(self.interests))),
+                      (0, self.cutoff) ]
+        else:
+            r = [ (0, min(bestnum,len(self.interests))) ]
+        
+        p = None
+        pInterval = 2 ** 30
+        for lo,hi in r:
+            for i in xrange(lo,hi):
+                for j in self.interests[i]:
+                    currInterval = calcInterval(j)
+                    if haves[j] and wantfunc(j) and j >= start and currInterval < pInterval:
+                        p = j
+                        pInterval = currInterval
+        if p is not None:
+            return p
+        if best is not None:
+            return best
+        return None
         
     def windowedSmartRarestFirst(self, haves, wantfunc, complete_first):
         intervalStart = self.getIntervalStart()
@@ -566,7 +610,8 @@ class PiecePicker:
                                     self.streamWatcher.rate) / self.streamWatcher.toKbytes(self.streamWatcher.piece_size))
             
             #Safe distance to ensure the downloaded piece could actually be watched on time
-            safeDistance = int( math.ceil( math.sqrt (self.streamWatcher.rate / float(self.rate) ) ) ) 
+            #safeDistance = int( math.ceil( math.sqrt (self.streamWatcher.rate / float(self.rate) ) ) ) 
+            safeDistance = 0
                 
             #self.logger.append("PIECEPICKER","Current safe distance is: %d" % safeDistance)
         else:
@@ -608,7 +653,7 @@ class PiecePicker:
             newWantFunc = lambda i: \
                 ((i >= self.getIntervalStart()) and wantfunc(i))
         else:
-            self.logger.append("PIECEPICKER", "%s [%d,%d]" % (self.formatPiecesGotWithWindows(window), window[0], window[-1]))
+            #self.logger.append("PIECEPICKER", "%s [%d,%d]" % (self.formatPiecesGotWithWindows(window), window[0], window[-1]))
             
             newWantFunc = lambda i: \
                 ((i in window) and wantfunc(i))
